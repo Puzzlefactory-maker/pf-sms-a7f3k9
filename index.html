@@ -1,0 +1,4127 @@
+<!DOCTYPE html>
+<html lang="ko"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" id="appleTitle" content="메시지">
+<meta name="theme-color" id="themeColor" content="#ffffff">
+<link rel="apple-touch-icon" href="./icons/icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" href="./icons/icon-192.png">
+<link id="manifestLink" rel="manifest" href="./manifest.webmanifest">
+<title>메시지</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overscroll-behavior:none; }
+  body {
+    font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",Roboto,sans-serif;
+    background:#000; display:flex; justify-content:center; align-items:center;
+    overflow:hidden; overscroll-behavior:none;
+  }
+  #phone { --safe-b:0px; width:100%; max-width:430px; height:100vh; height:100dvh; max-height:930px; background:#fff;
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    box-shadow:0 0 40px rgba(0,0,0,.4); }
+
+  .screen { flex:1; display:none; flex-direction:column; overflow:hidden; }
+  .screen.active { display:flex; }
+  #listScreen { display:flex; }
+  .scroll { flex:1; overflow-y:auto; min-height:0; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    padding-bottom:calc(var(--safe-b));padding-bottom:calc(env(safe-area-inset-bottom, 0px) + var(--safe-b)); }
+
+  /* ===== 목록 화면 헤더 ===== */
+  .list-head { flex-shrink:0; padding:6px 8px 2px; }
+  .list-head .toprow { display:flex; align-items:center; height:44px; padding:0 8px; }
+  .list-title { flex:1; font-size:22px; font-weight:700; color:#111; letter-spacing:-.3px; user-select:none; }
+  .head-icons { display:flex; gap:2px; }
+  .head-icons button { width:40px; height:40px; border:none; background:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:#3c3c3c; border-radius:50%; }
+  .head-icons svg { width:23px; height:23px; }
+  .searchbar { margin:6px 16px 8px; height:42px; background:#f1f2f4; border-radius:21px;
+    display:flex; align-items:center; padding:0 15px; gap:9px; color:#9aa0a6; font-size:14.5px; }
+  .searchbar svg { width:19px; height:19px; }
+
+  /* ===== 대화 목록 ===== */
+  .thread { display:flex; align-items:center; padding:11px 16px; gap:13px; cursor:pointer; }
+  .thread:active { background:#f5f6f8; }
+  .avatar { width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:600; color:#fff; }
+  .avatar img { width:100%; height:100%; object-fit:cover; }
+  .thread-meta { flex:1; min-width:0; }
+  .thread-name-row { display:flex; align-items:baseline; gap:6px; }
+  .thread-name { font-size:15.5px; font-weight:600; color:#141414; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; }
+  .thread-name.unreadname { font-weight:700; }
+  .thread-pin { font-size:11px; flex-shrink:0; }
+  .thread-preview { font-size:13.5px; color:#8b8f94; margin-top:3px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; }
+  .thread-preview.unread { color:#2b2b2b; }
+  .thread-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
+  .thread-time { font-size:12px; color:#9aa0a6; }
+  .thread-badge { min-width:19px; height:19px; padding:0 5px; border-radius:10px; background:#ff5a4d;
+    color:#fff; font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  .empty { text-align:center; color:#9aa0a6; font-size:14px; line-height:1.9; padding:70px 30px; }
+
+  /* ===== 대화방 화면 ===== */
+  .room-head { flex-shrink:0; height:56px; display:flex; align-items:center; padding:0 6px 0 4px;
+    border-bottom:1px solid #f0f0f2; background:#fff; gap:4px; }
+  .room-head .back { width:42px; height:44px; border:none; background:none; font-size:30px;
+    color:#2c2c2c; cursor:pointer; line-height:1; }
+  .room-head .r-av { width:36px; height:36px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; color:#fff; }
+  .room-head .r-av img { width:100%; height:100%; object-fit:cover; }
+  .room-head .r-info { flex:1; min-width:0; margin-left:9px; }
+  .room-head .r-name { font-size:16px; font-weight:600; color:#141414; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; }
+  .room-head .r-sub { font-size:11.5px; color:#9aa0a6; margin-top:1px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; }
+  .room-head .r-icons { display:flex; }
+  .room-head .r-icons button { width:42px; height:44px; border:none; background:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:#3c3c3c; }
+  .room-head .r-icons svg { width:22px; height:22px; }
+
+  .messages { flex:1; overflow-y:auto; min-height:0; padding:12px 12px 8px; background:#fff;
+    -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
+
+  .date-divider { text-align:center; margin:14px 0 12px; }
+  .date-divider span { font-size:11.5px; color:#9aa0a6; background:#f1f2f4; padding:4px 12px; border-radius:12px; }
+
+  .msg-row { display:flex; align-items:flex-end; gap:7px; margin-bottom:3px; }
+  .msg-row.mine { flex-direction:row-reverse; }
+  .m-av { width:30px; height:30px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:#fff; align-self:flex-start; margin-top:2px; }
+  .m-av img { width:100%; height:100%; object-fit:cover; }
+  .m-av.spacer { background:transparent !important; }
+  .m-col { max-width:74%; display:flex; flex-direction:column; }
+  .msg-row.mine .m-col { align-items:flex-end; }
+  .m-sender { font-size:11.5px; color:#8b8f94; margin:2px 0 3px 4px; }
+  .m-line { display:flex; align-items:flex-end; gap:6px; }
+  .msg-row.mine .m-line { flex-direction:row-reverse; }
+  .bubble { padding:9px 13px; border-radius:19px; font-size:14.5px; line-height:1.42; color:#141414;
+    background:#f1f2f4; word-break:break-word; white-space:pre-wrap; }
+  .msg-row.mine .bubble { background:#0a7cff; color:#fff; }
+  .bubble.img-bubble { padding:3px; background:#f1f2f4; cursor:pointer; }
+  .msg-row.mine .bubble.img-bubble { background:#e3effd; }
+  .bubble.img-bubble img { display:block; max-width:210px; width:100%; border-radius:16px; }
+  .bubble.img-bubble .cap { padding:6px 9px 4px; font-size:14px; color:#141414; }
+  .m-info { display:flex; flex-direction:column; align-items:flex-end; gap:1px; margin-bottom:1px; }
+  .msg-row:not(.mine) .m-info { align-items:flex-start; }
+  .m-time { font-size:10.5px; color:#9aa0a6; white-space:nowrap; }
+  .m-status { font-size:10.5px; color:#0a7cff; white-space:nowrap; font-weight:500; }
+
+  /* 하단 입력바 (장식용, 손님 모드에서 비활성) */
+  .inputbar { flex-shrink:0; display:flex; align-items:center; gap:9px;
+    padding:8px 12px calc(8px + var(--safe-b));padding:8px 12px calc(8px + env(safe-area-inset-bottom, 0px) + var(--safe-b));
+    border-top:1px solid #f0f0f2; background:#fff; }
+  .inputbar .plus { width:26px; height:26px; color:#8b8f94; flex-shrink:0; }
+  .inputbar .fake-input { flex:1; height:38px; background:#f1f2f4; border-radius:19px;
+    display:flex; align-items:center; padding:0 15px; color:#9aa0a6; font-size:14px; }
+  .inputbar .send { width:36px; height:36px; border-radius:50%; background:#c9ccd1; color:#fff;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .inputbar .send svg { width:19px; height:19px; }
+
+  /* ===== 사진 크게 보기 ===== */
+  #photoViewer { display:none; position:absolute; top:0;right:0;bottom:0;left:0; z-index:200; background:#000;
+    align-items:center; justify-content:center; }
+  #photoViewer.show { display:flex; }
+  #photoViewer img { max-width:100%; max-height:100%; object-fit:contain; }
+  #photoViewer .pv-close { position:absolute; top:14px; right:14px; width:38px; height:38px;
+    border-radius:50%; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:18px; cursor:pointer; }
+
+
+  /* ===== 관리자 패널 ===== */
+  #adminOverlay { display:none; position:absolute; top:0;right:0;bottom:0;left:0; background:#f4f5f7; z-index:50; flex-direction:column; }
+  #adminOverlay.active { display:flex; }
+  .admin-header { background:#22303c; color:#fff; padding:14px 16px; display:flex;
+    align-items:center; justify-content:space-between; flex-shrink:0; }
+  .admin-header h2 { font-size:17px; font-weight:700; }
+  .admin-header .row-actions { display:flex; gap:8px; }
+  .admin-header button { background:rgba(255,255,255,.16); color:#fff; border:none;
+    padding:8px 13px; border-radius:8px; font-size:13px; cursor:pointer; }
+  .admin-body { flex:1; overflow-y:auto; padding:16px; }
+
+  /* 모바일: 한 번에 한 칸만 보여준다 (지금까지와 같은 방식) */
+  #adminBody:not(.thread-open) #paneThread,
+  #adminBody:not(.thread-open) #paneMsgs { display:none; }
+  #adminBody.thread-open #paneHome { display:none; }
+  .pane-empty { color:#98a5b2; font-size:13px; text-align:center; padding:40px 16px; }
+
+  /* 이 폰을 쓸 지점 고르기 — 고르기 전에는 내용이 전혀 보이지 않는다 */
+  #pickBranch { position:absolute; top:0;right:0;bottom:0;left:0; z-index:70; background:#34c759; display:none;
+                align-items:center; justify-content:center; padding:22px; }
+  #pickBranch.show { display:flex; }
+  .bp-card { width:100%; max-width:360px; max-height:100%; overflow:auto; background:#fff;
+             border-radius:18px; padding:20px 16px; box-shadow:0 12px 40px rgba(0,0,0,.25); }
+  .bp-logo { width:56px; height:56px; margin:0 auto 12px; border-radius:18px; background:#34c759;
+             display:flex; align-items:center; justify-content:center; }
+  .bp-logo svg { width:32px; height:32px; }
+  .bp-title { font-size:17px; font-weight:800; text-align:center; color:#141414; }
+  .bp-sub { font-size:12px; color:#8a97a5; text-align:center; margin:6px 0 16px; line-height:1.55; }
+  .bp-row { display:flex; align-items:center; gap:10px; padding:13px 12px; border-radius:12px;
+            cursor:pointer; border:1px solid #e3e7ec; margin-bottom:8px; }
+  .bp-row:hover { background:#f2fbf4; border-color:#34c759; }
+  .bp-name { font-size:15.5px; font-weight:700; flex:1; min-width:0; color:#141414; }
+  .bp-cnt { font-size:12px; color:#8a97a5; font-weight:500; }
+  .bp-go { font-size:12px; color:#0a7cff; font-weight:700; white-space:nowrap; }
+  .bp-foot { font-size:11px; color:#a8b4c0; text-align:center; margin-top:12px; line-height:1.5; }
+
+  /* PC(마우스 쓰는 넓은 화면): 사이드바 · 대화 편집 · 대화 내용 3단 */
+  @media (min-width:1000px) and (pointer:fine){
+    #phone { max-width:none; max-height:none; width:100vw; height:100vh; box-shadow:none; }
+    body { background:#e9edf0; }
+    #listScreen, #roomScreen { max-width:430px; margin:0 auto; width:100%;
+      box-shadow:0 0 30px rgba(0,0,0,.12); }   /* 손님 화면은 폰 모양 유지 */
+    .admin-body { display:flex; gap:14px; align-items:stretch; overflow:hidden; padding:14px; }
+    .apane { overflow-y:auto; min-width:0; padding-right:2px; }
+    #paneHome { flex:0 0 320px; }
+    #paneThread { flex:0 0 400px; }   /* 대화 목록 + 고른 대화 편집 */
+    #paneMsgs { flex:1 1 auto; }
+    #adminBody:not(.thread-open) #paneThread,
+    #adminBody:not(.thread-open) #paneMsgs,
+    #adminBody.thread-open #paneHome { display:block; }
+    #backList { display:none; }              /* 3단에서는 목록이 항상 보이므로 불필요 */
+
+    /* 대화 내용을 문자 앱처럼 좌우로 나눠 보여준다 */
+    .msg-editor { max-width:86%; }
+    .msg-editor.mine { margin-left:auto; }
+  }
+
+  /* 누가 보낸 메시지인지 색으로도 구분 */
+  .msg-editor.mine { background:#f2f8ff; border-color:#cfe3fb; }
+  .msg-editor .who { font-size:11.5px; font-weight:700; color:#8a97a5; margin-bottom:6px; }
+  .msg-editor.mine .who { color:#2c6fb5; text-align:right; }
+
+  /* 맨 아래 메시지 추가 줄 */
+  .add-row { display:flex; gap:8px; align-items:center; margin-top:12px; }
+  .add-row .right { margin-left:auto; }
+
+  .admin-section { background:#fff; border-radius:12px; padding:16px; margin-bottom:14px; }
+  .admin-section h3 { font-size:14px; color:#22303c; margin-bottom:12px; font-weight:700;
+    display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .admin-section h3 .rsub { font-size:12px; color:#8a97a5; font-weight:600; word-break:break-all; }
+  .field { margin-bottom:12px; }
+  .field label { display:block; font-size:12px; color:#6a7580; margin-bottom:5px; font-weight:600; }
+  .field input, .field textarea, .field select { width:100%; border:1px solid #d7dde3; border-radius:9px;
+    padding:10px 12px; font-size:14px; font-family:inherit; color:#22303c; background:#fff; }
+  .field textarea { min-height:64px; resize:vertical; }
+  .hint { font-size:12px; color:#8a97a5; line-height:1.6; margin-top:8px; }
+  .kv { font-size:12.5px; color:#6a7580; line-height:1.8; word-break:break-all; }
+  .kv b { color:#22303c; }
+  .btn { border:none; border-radius:9px; padding:10px 14px; font-size:13.5px; font-weight:600;
+    cursor:pointer; font-family:inherit; }
+  .btn-sm { padding:7px 11px; font-size:12.5px; }
+  .btn-block { display:block; width:100%; margin-top:8px; }
+  .btn-primary { background:#0a7cff; color:#fff; }
+  .btn-ghost { background:#eef1f4; color:#33414d; }
+  .btn-danger { background:#ffe6e3; color:#e0402e; }
+  .btn-yellow { background:#ffe08a; color:#6b4e00; }
+  .row-actions { display:flex; gap:7px; flex-wrap:wrap; }
+  .admin-list-item { border:1px solid #e3e7ec; border-radius:10px; padding:11px 12px;
+    margin-bottom:10px; background:#fff; }
+
+  /* 끌어서 순서 바꾸기 */
+  .sortable .admin-list-item { touch-action:manipulation; }
+  .admin-list-item.dragging { opacity:.92; box-shadow:0 8px 20px rgba(0,0,0,.18);
+    border-color:#22303c; position:relative; z-index:5; }
+  .drag-hint { font-size:11.5px; color:#98a5b2; margin:0 0 8px; }
+
+  /* 폴더 경로 표시 */
+  .crumb { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .crumb-txt { font-size:13px; font-weight:700; color:#33414d; word-break:break-all; }
+  .crumb-txt .sep { color:#a8b4c0; font-weight:400; margin:0 3px; }
+  .node-name { font-weight:700; font-size:14.5px; color:#2a3a4a; cursor:pointer; }
+  .node-name .pen { font-size:11px; color:#a8b4c0; margin-left:4px; }
+
+  /* 접었다 펴는 섹션 */
+  .admin-section h3.foldable { cursor:pointer; user-select:none; }
+  .fold-arrow { font-size:11px; color:#8a97a5; margin-left:6px; }
+  .admin-section.folded .fold-body { display:none; }
+  .admin-list-item.on { border-color:#22303c; background:#f7f9fb; }
+  .admin-list-item .top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .admin-list-item .rname { font-weight:700; font-size:14.5px; color:#2a3a4a; }
+  .admin-list-item .rsub { font-size:12px; color:#8a97a5; margin-top:2px; word-break:break-all; }
+  .me-tag { background:#0a7cff; color:#fff; font-size:10.5px; font-weight:700;
+    padding:2px 6px; border-radius:6px; }
+  .me-tag.ghost { background:#e5e9ee; color:#6a7580; cursor:pointer; }
+
+  /* 등장인물 한 줄: [사진] 이름 … 참여 대화 / 아랫줄에 버튼 */
+  .ppl-row { display:flex; gap:10px; align-items:flex-start; }
+  .ppl-body { min-width:0; flex:1; }
+  .ppl-head { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .ppl-btns { display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
+  .ppl-alias { margin-top:8px; }
+  .ppl-alias label { display:block; font-size:11.5px; color:#8a97a5; margin-bottom:4px; font-weight:600; }
+  .ppl-alias input { width:100%; border:1px solid #d7dde3; border-radius:8px; padding:7px 9px;
+    font-size:13px; font-family:inherit; color:#22303c; }
+
+  /* 대화 참여자 줄 */
+  .part-row { display:flex; align-items:flex-start; gap:11px; padding:9px 0; border-bottom:1px solid #f0f2f5; }
+  .part-row:last-child { border-bottom:none; }
+  .part-thumb { width:46px; height:46px; border-radius:50%; flex-shrink:0; overflow:hidden; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:18px; }
+  .part-thumb img { width:100%; height:100%; object-fit:cover; }
+  .part-info { flex:1; min-width:0; }
+  .part-name { font-size:14.5px; font-weight:700; color:#2a3a4a; margin-bottom:6px;
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .part-name-input { flex:0 1 auto; min-width:0; width:130px; border:1px solid #d7dde3;
+    border-radius:7px; padding:6px 9px; font-size:14px; font-weight:700; color:#2a3a4a; font-family:inherit; }
+  .part-actions { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
+  .av-edit { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .av-edit .av-prev { width:56px; height:56px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:600; color:#fff; }
+  .av-edit .av-prev img { width:100%; height:100%; object-fit:cover; }
+
+  .msg-editor { border:1px solid #e3e7ec; border-radius:11px; padding:11px; margin-bottom:11px; background:#fbfcfd; }
+  .msg-editor .er1 { display:flex; gap:8px; margin-bottom:8px; }
+  .msg-editor .er1 select, .msg-editor .er1 input { border:1px solid #d7dde3; border-radius:8px;
+    padding:8px 10px; font-size:13px; font-family:inherit; }
+  .msg-editor .er1 .who-sel { width:110px; flex-shrink:0; }
+  .msg-editor textarea { width:100%; border:1px solid #d7dde3; border-radius:8px; padding:8px 10px;
+    font-size:13.5px; font-family:inherit; min-height:52px; resize:vertical; margin-bottom:8px; }
+  .msg-editor .stamp { font-size:11.5px; color:#8a97a5; margin:-2px 0 8px; }
+  .msg-editor .er2 { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .msg-editor .er2 label { font-size:12px; color:#5a6570; display:flex; align-items:center; gap:5px; }
+  .msg-editor .er2 input[type=text] { flex:1; min-width:90px; border:1px solid #d7dde3; border-radius:8px;
+    padding:7px 9px; font-size:12.5px; font-family:inherit; }
+  .msg-editor .er3 { display:flex; gap:6px; align-items:center; margin-top:9px; }
+  .msg-editor .er3 .spacer { flex:1; }
+  .msg-thumb { width:44px; height:44px; border-radius:8px; overflow:hidden; background:#e9edf1; flex-shrink:0; }
+  .msg-thumb img { width:100%; height:100%; object-fit:cover; }
+
+  /* ===== 모드 표시 / 토스트 / 확인창 ===== */
+  .mode-pill { position:absolute; top:6px; left:50%; transform:translateX(-50%); z-index:60;
+    background:#22303c; color:#fff; font-size:11px; padding:4px 12px; border-radius:12px; display:none; }
+  .mode-pill.show { display:block; }
+  .toast { position:absolute; bottom:80px; left:50%; transform:translateX(-50%); z-index:220;
+    background:rgba(20,20,20,.9); color:#fff; font-size:13px; padding:10px 18px; border-radius:22px;
+    opacity:0; transition:opacity .25s; pointer-events:none; max-width:80%; text-align:center; }
+  .toast.show { opacity:1; }
+  #confirmBox { display:none; position:absolute; top:0;right:0;bottom:0;left:0; z-index:240; background:rgba(0,0,0,.4);
+    align-items:center; justify-content:center; padding:30px; }
+  #confirmBox.show { display:flex; }
+  .confirm-card { background:#fff; border-radius:14px; padding:22px 20px 16px; width:100%;
+    max-width:300px; box-shadow:0 10px 40px rgba(0,0,0,.3); }
+  .confirm-msg { font-size:15px; color:#22303c; line-height:1.5; margin-bottom:18px; text-align:center; }
+  .confirm-actions { display:flex; gap:8px; }
+  .confirm-actions .btn { flex:1; padding:11px; }
+</style>
+<!-- ===================== 구형 브라우저 호환 블록 =====================
+     삼성 인터넷 5.0(2016년 갤럭시) 이상, 크롬 49 이상에서도 앱이 열리도록
+     없는 기능을 대신 채워 넣는다. 최신 기기에서는 아무 일도 하지 않는다. -->
+<style id="oldBrowserCss">
+/* 이 앱은 표 배치·사진비율 기능을 쓰지 않아 따로 대체할 스타일이 없다 */
+</style>
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- 1. 없는 자바스크립트 기능 채우기 ---------- */
+
+  /* 숫자 앞에 0을 붙일 때 쓴다 (시각 표시). 크롬 57 미만에 없음 */
+  if(!String.prototype.padStart){
+    String.prototype.padStart = function(len, pad){
+      var s = String(this);
+      pad = (pad === undefined) ? ' ' : String(pad);
+      if(s.length >= len || pad === '') return s;
+      var fill = '';
+      while(fill.length < len - s.length) fill += pad;
+      return fill.slice(0, len - s.length) + s;
+    };
+  }
+  if(!String.prototype.padEnd){
+    String.prototype.padEnd = function(len, pad){
+      var s = String(this);
+      pad = (pad === undefined) ? ' ' : String(pad);
+      if(s.length >= len || pad === '') return s;
+      var fill = '';
+      while(fill.length < len - s.length) fill += pad;
+      return s + fill.slice(0, len - s.length);
+    };
+  }
+
+  /* 앱 설치 안내를 닫을 때 쓴다. 크롬 63 미만에 없음 */
+  if(window.Promise && !Promise.prototype['finally']){
+    Promise.prototype['finally'] = function(cb){
+      var P = this.constructor || Promise;
+      return this.then(
+        function(v){ return P.resolve(cb()).then(function(){ return v; }); },
+        function(e){ return P.resolve(cb()).then(function(){ throw e; }); }
+      );
+    };
+  }
+
+  /* 화면 요소를 한꺼번에 훑을 때 쓴다. 크롬 51 미만에 없어서 앱이 멈춘다 */
+  ['NodeList','HTMLCollection','DOMTokenList'].forEach(function(n){
+    var C = window[n];
+    if(C && C.prototype && !C.prototype.forEach){
+      C.prototype.forEach = Array.prototype.forEach;
+    }
+  });
+
+  if(!Object.entries){
+    Object.entries = function(o){
+      var r = [], k;
+      for(k in o){ if(Object.prototype.hasOwnProperty.call(o, k)) r.push([k, o[k]]); }
+      return r;
+    };
+  }
+  if(!Object.values){
+    Object.values = function(o){
+      var r = [], k;
+      for(k in o){ if(Object.prototype.hasOwnProperty.call(o, k)) r.push(o[k]); }
+      return r;
+    };
+  }
+  if(!Array.prototype.includes){
+    Array.prototype.includes = function(v){ return this.indexOf(v) !== -1; };
+  }
+  if(window.Element && !Element.prototype.closest){
+    var m = Element.prototype.matches || Element.prototype.webkitMatchesSelector ||
+            Element.prototype.msMatchesSelector;
+    Element.prototype.matches = m;
+    Element.prototype.closest = function(sel){
+      var e = this;
+      while(e && e.nodeType === 1){ if(m.call(e, sel)) return e; e = e.parentElement; }
+      return null;
+    };
+  }
+
+  /* ---------- 2. 칸 사이 여백(gap) 대신 여백 직접 계산 ---------- */
+  /* 크롬 84 미만에서는 flex 안의 gap이 무시되어 글자·버튼이 다 붙어 보인다.
+     그래서 스타일을 훑어 gap이 쓰인 곳을 찾아 바깥여백으로 바꿔 준다. */
+
+  var gapStyle = null;
+
+  function flexGapWorks(){
+    var box = document.createElement('div');
+    box.style.cssText = 'display:flex;flex-direction:column;row-gap:1px;' +
+                        'position:absolute;visibility:hidden;height:0;overflow:visible';
+    box.appendChild(document.createElement('div'));
+    box.appendChild(document.createElement('div'));
+    var host = document.body || document.documentElement;
+    host.appendChild(box);
+    var ok = box.scrollHeight === 1;
+    host.removeChild(box);
+    return ok;
+  }
+
+  function firstValue(v){
+    v = (v || '').trim();
+    if(!v || v === 'normal') return '';
+    return v.split(/\s+/)[0];
+  }
+  function secondValue(v){
+    v = (v || '').trim();
+    if(!v || v === 'normal') return '';
+    var p = v.split(/\s+/);
+    return p[1] || p[0];
+  }
+
+  function collect(rules, out){
+    if(!rules) return;
+    for(var i = 0; i < rules.length; i++){
+      var r = rules[i];
+      if(r.cssRules && r.cssRules.length) collect(r.cssRules, out);   /* @media 안쪽까지 */
+      if(!r.style || !r.selectorText) continue;
+      if(r.style.gridTemplateColumns || r.style.gridTemplateRows) continue;  /* 표 배치는 따로 처리 */
+      if((r.style.display || '').indexOf('grid') >= 0) continue;
+
+      var g  = r.style.getPropertyValue('gap');
+      var rg = (r.style.getPropertyValue('row-gap')    || firstValue(g)).trim();
+      var cg = (r.style.getPropertyValue('column-gap') || secondValue(g)).trim();
+      if(rg === 'normal') rg = '';
+      if(cg === 'normal') cg = '';
+      if(!rg && !cg) continue;
+
+      out.push({ sel: r.selectorText, rg: rg, cg: cg,
+                 disp: (r.style.display || '').trim(),
+                 dir:  (r.style.flexDirection || '').trim(),
+                 wrap: (r.style.flexWrap || '').trim() });
+    }
+  }
+
+  function buildGapCss(){
+    var found = [];
+    var sheets = document.styleSheets;
+    for(var i = 0; i < sheets.length; i++){
+      try { collect(sheets[i].cssRules, found); } catch(e){ /* 읽을 수 없는 스타일은 건너뛴다 */ }
+    }
+
+    var css = [];
+    for(var k = 0; k < found.length; k++){
+      var f = found[k];
+      var parts = f.sel.split(',');
+      for(var s = 0; s < parts.length; s++){
+        var sel = parts[s].trim();
+        if(!sel || sel.indexOf('::') >= 0) continue;
+
+        /* 실제 화면에 있는 요소를 보고 가로줄인지 세로줄인지 판단한다 */
+        var el = null, cs = null;
+        try { el = document.querySelector(sel); } catch(e){ continue; }
+        if(el && window.getComputedStyle) cs = window.getComputedStyle(el);
+
+        var disp = f.disp || (cs ? cs.display : '');
+        if(disp.indexOf('flex') < 0) continue;          /* flex가 아니면 손대지 않는다 */
+
+        var dir  = f.dir  || (cs ? (cs.flexDirection || 'row') : 'row');
+        var wrap = f.wrap || (cs ? (cs.flexWrap || 'nowrap') : 'nowrap');
+        var column = dir.indexOf('column') === 0;
+
+        if(wrap.indexOf('wrap') === 0){
+          /* 줄바꿈되는 묶음은 모든 칸에 여백을 준다 */
+          if(f.cg) css.push(sel + '>*{margin-right:' + f.cg + '}');
+          if(f.rg) css.push(sel + '>*{margin-bottom:' + f.rg + '}');
+        } else if(column){
+          if(f.rg) css.push(sel + '>*+*{margin-top:' + f.rg + '}');
+        } else {
+          if(f.cg) css.push(sel + '>*+*{margin-left:' + f.cg + '}');
+        }
+      }
+    }
+
+    if(!gapStyle){
+      gapStyle = document.createElement('style');
+      gapStyle.id = 'oldBrowserGap';
+      (document.head || document.documentElement).appendChild(gapStyle);
+    }
+    gapStyle.textContent = css.join('\n');
+  }
+
+  function startGapFix(){
+    try {
+      if(flexGapWorks()) return;            /* 요즘 기기 — 그대로 둔다 */
+      buildGapCss();
+      /* 앱이 화면을 다 그린 뒤 한 번 더 — 그때 생긴 부분까지 맞춘다 */
+      setTimeout(buildGapCss, 1200);
+      setTimeout(buildGapCss, 3000);
+    } catch(e){ /* 실패해도 앱은 그대로 쓸 수 있으니 조용히 넘어간다 */ }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', startGapFix);
+  } else {
+    startGapFix();
+  }
+})();
+</script>
+<!-- =================== 구형 브라우저 호환 블록 끝 =================== -->
+
+<style id="oldBrowserGap">.head-icons>*+*{margin-left:2px}
+.searchbar>*+*{margin-left:9px}
+.thread>*+*{margin-left:13px}
+.thread-name-row>*+*{margin-left:6px}
+.thread-right>*+*{margin-top:6px}
+.room-head>*+*{margin-left:4px}
+.msg-row>*+*{margin-left:7px}
+.m-line>*+*{margin-left:6px}
+.m-info>*+*{margin-top:1px}
+.inputbar>*+*{margin-left:9px}
+.admin-header .row-actions>*{margin-right:8px}
+.admin-header .row-actions>*{margin-bottom:8px}
+.bp-row>*+*{margin-left:10px}
+.admin-body>*+*{margin-left:14px}
+.add-row>*+*{margin-left:8px}
+.admin-section h3>*+*{margin-left:8px}
+.row-actions>*{margin-right:7px}
+.row-actions>*{margin-bottom:7px}
+.crumb>*{margin-right:8px}
+.crumb>*{margin-bottom:8px}
+.admin-list-item .top>*+*{margin-left:8px}
+.ppl-row>*+*{margin-left:10px}
+.ppl-head>*{margin-right:8px}
+.ppl-head>*{margin-bottom:8px}
+.ppl-btns>*{margin-right:6px}
+.ppl-btns>*{margin-bottom:6px}
+.part-row>*+*{margin-left:11px}
+.part-name>*{margin-right:6px}
+.part-name>*{margin-bottom:6px}
+.part-actions>*{margin-right:5px}
+.part-actions>*{margin-bottom:5px}
+.av-edit>*+*{margin-left:12px}
+.msg-editor .er1>*+*{margin-left:8px}
+.msg-editor .er2>*{margin-right:8px}
+.msg-editor .er2>*{margin-bottom:8px}
+.msg-editor .er2 label>*+*{margin-left:5px}
+.msg-editor .er3>*+*{margin-left:6px}
+.confirm-actions>*+*{margin-left:8px}</style></head>
+<body>
+<div id="phone" style="--safe-b: 0px;">
+  <div class="mode-pill" id="modePill">관리자 모드</div>
+
+  <!-- 대화 목록 화면 -->
+  <div class="screen" id="listScreen">
+    <div class="list-head">
+      <div class="toprow">
+        <div class="list-title" id="listTitle">메시지</div>
+        <div class="head-icons">
+          <button title="검색">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+          </button>
+          <button id="btnFull" title="새 메시지 (관리자: 전체화면)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 3.5l3 3L10 17l-4 1 1-4 10.5-10.5z"></path><path d="M20 14v5a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5"></path></svg>
+          </button>
+          <button id="btnAdmin" title="관리자">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"></circle><circle cx="12" cy="12" r="1.9"></circle><circle cx="12" cy="19" r="1.9"></circle></svg>
+          </button>
+        </div>
+      </div>
+      <div class="searchbar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3" stroke-linecap="round"></path></svg>
+        <span>대화 검색</span>
+      </div>
+    </div>
+    <div class="scroll" id="threadList"></div>
+  </div>
+
+  <!-- 대화방 화면 -->
+  <div class="screen" id="roomScreen">
+    <div class="room-head">
+      <button class="back" id="btnBack">‹</button>
+      <div class="r-av" id="roomAv" style="background: rgb(229, 115, 107);">김</div>
+      <div class="r-info">
+        <div class="r-name" id="roomName">김훈남</div>
+        <div class="r-sub" id="roomSub"></div>
+      </div>
+      <div class="r-icons">
+        <button title="전화">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1L6.6 10.8z"></path></svg>
+        </button>
+        <button title="영상통화">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h11c1.1 0 2 .9 2 2v2.3l4-2.6c.3-.2.8 0 .8.4v7.8c0 .4-.5.6-.8.4L17 13.7V16c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2z"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="inputbar">
+      <svg class="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+      <div class="fake-input">메시지 입력</div>
+      <span class="send">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"></path></svg>
+      </span>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- 이 폰을 쓸 지점 고르기 -->
+  <div id="pickBranch">
+    <div class="bp-card">
+      <div class="bp-logo">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 3C6.9 3 2.8 6.4 2.8 10.6c0 2.4 1.3 4.5 3.4 5.9-.1 1-.5 2.3-.9 3.1-.2.4.2.7.6.5 1.4-.6 3-1.5 3.8-2 .7.1 1.5.2 2.3.2 5.1 0 9.2-3.4 9.2-7.7S17.1 3 12 3z"></path></svg>
+      </div>
+      <div class="bp-title">이 폰을 쓸 지점을 고르세요</div>
+      <div class="bp-sub">고른 지점의 내용만 보입니다.<br>이 기기에만 저장되며, 나중에 바꿀 수 없습니다.</div>
+      <div id="branchList"></div>
+      <div class="bp-foot">잘못 골랐다면 주소 끝에 <b>?reset=1</b> 을 붙여 다시 여세요.</div>
+    </div>
+  </div>
+
+  <!-- 사진 크게 보기 -->
+  <div id="photoViewer">
+    <img id="photoViewerImg" alt="">
+    <button class="pv-close" id="photoClose">✕</button>
+  </div>
+
+  <!-- 관리자 패널 -->
+  <div id="adminOverlay" class="">
+    <div class="admin-header">
+      <h2 id="adminTitle">관리자</h2>
+      <div class="row-actions">
+        <button id="adminGuest">손님 모드</button>
+        <button id="adminClose">닫기</button>
+      </div>
+    </div>
+    <div class="admin-body" id="adminBody">
+      <div class="apane" id="paneHome"></div>
+      <div class="apane" id="paneThread"></div>
+      <div class="apane" id="paneMsgs"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="confirmBox" class="">
+    <div class="confirm-card">
+      <div class="confirm-msg" id="confirmMsg">지금 화면에 열려 있는 상태로 파일을 만듭니다.
+기능이 바뀐 파일을 새로 받았다면 먼저 새로고침(F5) 후에 만들어 주세요.</div>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" id="confirmNo">취소</button>
+        <button class="btn btn-danger" id="confirmYes">삭제</button>
+      </div>
+    </div>
+  </div>
+
+
+<script>
+/* ============================================================
+   단서 메시지 — 크라임씬용 가짜 문자(메시지) 앱
+   - 손님 모드: 메시지 확인만 가능 (관리자 버튼 숨김)
+   - 관리자 모드: 목록 화면 제목을 5초 길게 눌러 진입
+   - 데이터 규칙: 파일에 내장된 내용(DATA_VERSION + 지문)이 바뀌면
+     (= 새 파일 설치) 폰에 저장된 내용을 지우고 파일 내용으로 초기화한다.
+     같은 파일이면 폰에서 수정한 내용이 항상 우선.
+   ============================================================ */
+
+/*__CS_DATA_START__ 아래 두 줄이 이 파일에 들어있는 대화 내용입니다. */
+const DATA_VERSION = "2026-09-30-171247";
+const EMBEDDED_DATA = {
+ "appName": "메시지",
+ "tree": [
+  {
+   "id": "seedc1",
+   "name": "부평점",
+   "children": [
+    {
+     "id": "seedc2",
+     "name": "연애프로",
+     "lists": [
+      "부평점_연애프로"
+     ]
+    },
+    {
+     "id": "x2i91xrw",
+     "name": "분신사바",
+     "lists": [
+      "부평점_분신사바"
+     ]
+    }
+   ]
+  }
+ ],
+ "lists": [
+  {
+   "key": "부평점_연애프로",
+   "label": "연애프로",
+   "title": "메시지",
+   "bottomPad": 0,
+   "threads": [
+    {
+     "id": "seedt1",
+     "messages": [
+      {
+       "id": "seedm1",
+       "text": "안녕하세요. 사람을 좀 찾고 싶어서 처음 연락드립니다. 이름은 전세금이고, 십 년도 더 지난 과거 정보밖에 없지만 어떻게든 꼭 찾아야 합니다. 의뢰가 가능할까요?",
+       "image": "",
+       "time": "오후 7:30",
+       "date": "2026-01-25",
+       "status": "",
+       "senderName": "로이어초이"
+      },
+      {
+       "id": "seedm2",
+       "text": "다자바 흥신소입니다. 처음 연락 주셨군요. 남겨주신 기본 정보 확인했습니다. 워낙 오래된 기록이라 시간은 조금 걸리겠지만 바로 추적 들어가 보겠습니다.",
+       "image": "",
+       "time": "오후 7:31",
+       "date": "",
+       "status": "",
+       "senderName": "다자바 흥신소"
+      },
+      {
+       "id": "seedm3",
+       "text": "의뢰하신 전세금 씨 찾았습니다. 생각보다 아주 가까운 곳에 있었네요. 현재 유명 세무사로 활동 중이며, 억울한 사람들을 위해 '전세 사기 무료 상담'을 해주는 유튜브 채널도 운영하고 있는 꽤 유명한 인플루언서입니다. 내용 확인하시고 약속된 잔금 500만 원 입금 부탁드립니다.",
+       "image": "",
+       "time": "오후 9:20",
+       "date": "2026-01-27",
+       "status": "",
+       "senderName": "다자바 흥신소"
+      },
+      {
+       "id": "seedm4",
+       "text": "보내주신 메일과 유튜브 영상 모두 확인했습니다. 정말 감사합니다. 방금 잔금 500만 원 입금했습니다.",
+       "image": "",
+       "time": "오후 9:25",
+       "date": "",
+       "status": "",
+       "senderName": "로이어초이"
+      },
+      {
+       "id": "xswpwoh2",
+       "senderName": "다자바 흥신소",
+       "text": "입금 확인되었습니다. 깔끔한 거래 감사합니다. 의뢰를 완전히 종료합니다. 또 찾아주십쇼!",
+       "image": "",
+       "time": "오후 9:26",
+       "date": "",
+       "status": ""
+      }
+     ],
+     "participants": [
+      {
+       "id": "x0hue3rj",
+       "name": "로이어초이",
+       "sub": ""
+      },
+      {
+       "id": "xrqm1wa2",
+       "name": "다자바 흥신소",
+       "sub": ""
+      }
+     ],
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "p17dt27c": {
+       "unread": 0
+      }
+     }
+    },
+    {
+     "id": "xemtwo1t",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "p10ky3eo": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "xwroosca",
+       "name": "다자바 흥신소",
+       "sub": ""
+      },
+      {
+       "id": "xaxyijet",
+       "name": "신모델",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "xf62thbs",
+       "senderName": "신모델",
+       "text": "안녕하세요. 특정 인물 과거 조사 의뢰하고 싶은데요.",
+       "image": "",
+       "time": "오후 2:17",
+       "date": "2025-12-29",
+       "status": ""
+      },
+      {
+       "id": "x07po2i9",
+       "senderName": "다자바 흥신소",
+       "text": "네 안녕하세요. 어떤 내용인지 간략히 말씀해 주시겠어요?",
+       "image": "",
+       "time": "오후 2:31",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xa8bin0u",
+       "senderName": "신모델",
+       "text": "천선생이라는 전직 고등학교 교사인데요. 교사 그만둔 이유랑 주변 인물 파익이 필요합니다.\n특히 과거에 얽혀 있는 인물이 있다고 들었는데, 그 부분 좀 캐주실 수 있나요?",
+       "image": "",
+       "time": "오후 2:44",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "x8lxtbt9",
+       "senderName": "다자바 흥신소",
+       "text": "가능합니다. 정밀 조사 기준으로 진행하면 될까요?\n\n주변 인물 동선까지 포함하면 기간이 좀 걸릴 수 있습니다.",
+       "image": "",
+       "time": "오후 3:02",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "x7tc778o",
+       "senderName": "신모델",
+       "text": "네, 정밀 조사로 부탁드립니다.\n비용이랑 기간 안내해 주세요",
+       "image": "",
+       "time": "오후 3:08",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "x4soreik",
+       "senderName": "다자바 흥신소",
+       "text": "정밀 조사 기준 1주일 내외로 보시면 됩니다.\n차굿금 입금 확인 후 바로 시작하겠습니다.\n국민은행 123-456-789012\n예금주 : 다자바흥신소\n착수금 500.000원 입금 부탁드립니다.",
+       "image": "",
+       "time": "오후 3:15",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xlkveb5g",
+       "senderName": "신모델",
+       "text": "방금 입금했습니다. 확인 부탁드려요.",
+       "image": "",
+       "time": "오후 4:52",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xdj89j5r",
+       "senderName": "다자바 흥신소",
+       "text": "확인했습니다. 바로 착수하겠습니다.",
+       "image": "",
+       "time": "오후 4:58",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "x3m3gmqb",
+       "senderName": "다자바 흥신소",
+       "text": "의뢰하신 건 조사 완료됐습니다.\n보고서 문서로 전달 드릴게요.\n확인해 보시고 추가 밀착 감시 필요하시면 말씀해주세요.",
+       "image": "",
+       "time": "오후 4:58",
+       "date": "2026-01-05",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "xuy65mro",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "p81x5w4": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "xkr8gqaf",
+       "name": "김훈남",
+       "sub": ""
+      },
+      {
+       "id": "xwoq93jo",
+       "name": "이보컬",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "xpl1s0c4",
+       "senderName": "김훈남",
+       "text": "보컬아 자니? 나 이제 데이트 끝나고 숙소 들어왔어. 씻기 전에 너한테 먼저 톡 해. 오후",
+       "image": "",
+       "time": "오후 9:15",
+       "date": "2026-03-24",
+       "status": ""
+      },
+      {
+       "id": "x48cwpxy",
+       "senderName": "이보컬",
+       "text": "아니 아직 안 자. 데이트는 재밌었어?",
+       "image": "",
+       "time": "오후 9:18",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xy3ehmc4",
+       "senderName": "김훈남",
+       "text": "재밌긴 무슨. 네 생각 나서 집중 하나도 못 했어. 네가 옆에 없으니까 시간 진짜 안 가더라.",
+       "image": "",
+       "time": "오후 9:20",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xeb4drv9",
+       "senderName": "이보컬",
+       "text": "에이 거짓말. 아까 데이트 상대 고를 때 나 말고 다른 사람 골랐으면서... 나 솔직히 오늘 하루 종일 엄청 서운했어.",
+       "image": "",
+       "time": "오후 9:25",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xzrae0lc",
+       "senderName": "김훈남",
+       "text": "나도 무조건 너랑 데이트하고 싶었는데, 제작진 쪽에서 오늘은 방송 흐름상 다른 사람이랑 나가는 그림이 필요하다고 룰 핑계로 막 푸시하니까 나도 진짜 어쩔 수가 없었어.",
+       "image": "",
+       "time": "오후 9:30",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xka5tbvj",
+       "senderName": "이보컬",
+       "text": "아... 그런 사정이 있었구나. 나는 그것도 모르고 네가 갑자기 나한테 마음 식은 줄 알고 혼자 바보처럼 우울해하고 있었어.",
+       "image": "",
+       "time": "오후 9:33",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xtkab4v5",
+       "senderName": "김훈남",
+       "text": "오늘 혼자 둬서 미안해. 내일은 피디님이 뭐라 하든 눈치 안 보고 무조건 너 고를 거야. 내일은 하루 종일 딱 붙어서 데이트하자. 알겠지?",
+       "image": "",
+       "time": "오후 9:38",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xlkxvvtl",
+       "senderName": "이보컬",
+       "text": "응 알았어. 그 말 들으니까 이제야 좀 살 것 같다. 내일은 무조건 나랑 데이트하는 거다? 진짜 꼭 약속해!",
+       "image": "",
+       "time": "오후 9:42",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xl9qttnc",
+       "senderName": "김훈남",
+       "text": "당연하지. 오늘 못 놀아준 것까지 내일 백 배로 다 채워줄게. 내일 봐!",
+       "image": "",
+       "time": "오후 9:45",
+       "date": "",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "xstgjvn0",
+     "isGroup": false,
+     "only": [],
+     "per": {},
+     "participants": [
+      {
+       "id": "xva540pu",
+       "name": "새빛여고 이사장님"
+      },
+      {
+       "id": "xceicjg8",
+       "name": "천선생"
+      }
+     ],
+     "messages": [
+      {
+       "id": "x98pxly4",
+       "senderName": "새빛여고 이사장님",
+       "text": "천선생, 새빛여고 이사장입니다.\n내일 출근하지 말고 교무실에 들러서 사직서부터 내세요.\n이전 학교에서 학생과 있었던 불미스러운 일, 벌써 학부모들 귀에 다 들어갔습니다. 학교가 발칵 뒤집혔으니, 우리로서는 더 이상 천선생을 받아줄 수가 없습니다.\n",
+       "image": "",
+       "time": "오후 8:17",
+       "date": "2018-02-28",
+       "status": ""
+      },
+      {
+       "id": "xly1rezx",
+       "senderName": "천선생",
+       "text": "이사장님, 정말 죄송합니다.\n제가 다 잘못했습니다. 제발 한 번만, 딱 한 번만 기회를 주시면 안될까요? 저 진짜 당장 갈 곳이 없습니다. 눈에 띄지 않고 군말 없이 열심히 수업만 잘 하겠습니다. 제발 한 번만 살려주세요...",
+       "image": "",
+       "time": "오후 8:21",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xsdf5has",
+       "senderName": "새빛여고 이사장님",
+       "text": "이미 끝난 애기입니다.\n학부모들이 당장 내일부터 교육청에 단체 민원 넣고 교문앞에서 시위하겠다는데 학교 문 닫으라는 소리입니까? 억지로 출근해 봐야 학부모들한테 둘러싸여 험한 꼴만 당합니다.\n조용히 권고사직으로 덮어줄 때 미련 없이 떠나세요. 더 일이 커지면 천선생한테도 좋을 것 없지 않습니까?\n",
+       "image": "",
+       "time": "오후 8:28",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "x2rt7k88",
+       "senderName": "천선생",
+       "text": "네, 이사장님... 말씀하신대로 내일 아침에 사직서 제출하겠습니다. 물의를 일으켜서 정말 죄송합니다...!",
+       "image": "",
+       "time": "오후 8:31",
+       "date": "",
+       "status": ""
+      }
+     ]
+    }
+   ],
+   "people": [
+    {
+     "id": "p17dt27c",
+     "name": "로이어초이",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    },
+    {
+     "id": "p174w5lc",
+     "name": "다자바 흥신소",
+     "sub": "",
+     "avatar": "",
+     "silo": 1
+    },
+    {
+     "id": "p10ky3eo",
+     "name": "신모델",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    },
+    {
+     "id": "p1vi52sw",
+     "name": "김훈남",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    },
+    {
+     "id": "p81x5w4",
+     "name": "이보컬",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    },
+    {
+     "id": "pk4r7js",
+     "name": "새빛여고 이사장님",
+     "sub": "",
+     "avatar": "",
+     "silo": 1
+    },
+    {
+     "id": "pk4r7js_2",
+     "name": "천선생",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    }
+   ],
+   "unified": true,
+   "today": "2026-03-25"
+  },
+  {
+   "key": "부평점_분신사바",
+   "label": "분신사바",
+   "title": "메시지",
+   "bottomPad": 0,
+   "threads": [
+    {
+     "id": "x9r265mh",
+     "messages": [
+      {
+       "id": "xftf7nuu",
+       "text": "안녕하세요. 사람을 좀 찾고 싶어서 처음 연락드립니다. 이름은 전세금이고, 십 년도 더 지난 과거 정보밖에 없지만 어떻게든 꼭 찾아야 합니다. 의뢰가 가능할까요?",
+       "image": "",
+       "time": "오후 7:30",
+       "date": "2026-01-25",
+       "status": "",
+       "senderName": "김훈남"
+      },
+      {
+       "id": "x2938qn5",
+       "text": "다자바 흥신소입니다. 처음 연락 주셨군요. 남겨주신 기본 정보 확인했습니다. 워낙 오래된 기록이라 시간은 조금 걸리겠지만 바로 추적 들어가 보겠습니다.",
+       "image": "",
+       "time": "오후 7:31",
+       "date": "",
+       "status": "",
+       "senderName": "이보컬"
+      },
+      {
+       "id": "x9jwko5a",
+       "text": "의뢰하신 전세금 씨 찾았습니다. 생각보다 아주 가까운 곳에 있었네요. 현재 유명 세무사로 활동 중이며, 억울한 사람들을 위해 '전세 사기 무료 상담'을 해주는 유튜브 채널도 운영하고 있는 꽤 유명한 인플루언서입니다. 내용 확인하시고 약속된 잔금 500만 원 입금 부탁드립니다.",
+       "image": "",
+       "time": "오후 9:20",
+       "date": "2026-01-27",
+       "status": "",
+       "senderName": "이보컬"
+      },
+      {
+       "id": "x4ocxzit",
+       "text": "보내주신 메일과 유튜브 영상 모두 확인했습니다. 정말 감사합니다. 방금 잔금 500만 원 입금했습니다.",
+       "image": "",
+       "time": "오후 9:25",
+       "date": "",
+       "status": "",
+       "senderName": "김훈남"
+      },
+      {
+       "id": "xqkh9hnh",
+       "senderName": "이보컬",
+       "text": "입금 확인되었습니다. 깔끔한 거래 감사합니다. 의뢰를 완전히 종료합니다. 또 찾아주십쇼!",
+       "image": "",
+       "time": "오후 9:26",
+       "date": "",
+       "status": ""
+      }
+     ],
+     "participants": [
+      {
+       "id": "xn8dn494",
+       "name": "김훈남",
+       "sub": ""
+      },
+      {
+       "id": "xdpu1g8n",
+       "name": "이보컬",
+       "sub": ""
+      }
+     ],
+     "isGroup": false,
+     "only": [],
+     "per": {}
+    }
+   ],
+   "people": [
+    {
+     "id": "p1veweq8",
+     "name": "김훈남",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    },
+    {
+     "id": "pffqe68",
+     "name": "이보컬",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    }
+   ],
+   "unified": true
+  }
+ ]
+};
+/*__CS_DATA_END__*/
+
+/* 코드(기능) 버전. 데이터와 별개로 “이 파일의 프로그램이 언제 것인지”를 나타낸다.
+   관리자 정보란에 표시되므로, 폰에 옛 파일이 올라갔는지 바로 알 수 있다. */
+const CODE_VERSION = '2026-09-30-K (구형 브라우저 호환)';
+
+const STORE_KEY = 'crimescene_sms_v2';
+const LEGACY_KEYS = ['crimescene_sms_v1'];
+const AV_COLORS = ['#e5736b','#e59a4a','#4aa6c4','#5b8def','#8a6fd4','#4bab8a','#c96fa8','#7d8fa0'];
+
+let data = null;
+let listIdx = 0;
+let currentThreadId = null;
+let isAdmin = false;
+let importOpen = false;   /* 다른 목록의 대화 불러오기 패널 열림 여부 */
+let deferredInstall = null;
+let swState = '확인 중';      /* 서비스워커 상태 (관리자 정보란에 표시) */
+
+/* ---------- 상단 상태바 색 (화면에 맞춰 전환) ---------- */
+const THEME_LIST  = '#ffffff';
+const THEME_ROOM  = '#ffffff';
+const THEME_ADMIN = '#22303c';
+function setThemeColor(c){
+  const m = document.getElementById('themeColor');
+  if(m && m.content !== c) m.content = c;
+}
+
+/* ---------- 저장 / 불러오기 (버전 + 지문 도장 방식) ---------- */
+function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
+
+/* 미리보기(샌드박스)나 사생활 보호 모드에서는 저장이 막힐 수 있다 */
+const storageOK = (function(){
+  try { localStorage.setItem('__cs_t','1'); localStorage.removeItem('__cs_t'); return true; }
+  catch(e){ return false; }
+})();
+
+/* 뒤로가기 처리 (샌드박스 미리보기에서는 history 사용이 막히므로 직접 닫는다) */
+let histOK = true;
+function pushView(v){
+  try { history.pushState({v:v}, ''); } catch(e){ histOK = false; }
+}
+function closeTop(){
+  if($('#photoViewer').classList.contains('show')){ closePhoto(); return; }
+  if($('#adminOverlay').classList.contains('active')){ closeAdmin(); return; }
+  if($('#roomScreen').classList.contains('active')){ backToList(); return; }
+}
+function goBack(){
+  if(histOK){ history.back(); return; }
+  closeTop();
+}
+
+function wipeStored(){
+  idbBox = null;
+  try{ idbClear(); }catch(e){}
+  try{
+    localStorage.removeItem(STORE_KEY);
+    LEGACY_KEYS.forEach(k=>localStorage.removeItem(k));
+  }catch(e){}
+  try{
+    if(window.caches && caches.keys){
+      caches.keys().then(keys=>keys.forEach(k=>{ if(k.indexOf(DATA_VERSION)===-1) caches.delete(k); }));
+    }
+  }catch(e){}
+}
+
+/* 파일에 들어있는 대화 내용의 지문.
+   DATA_VERSION 을 고치지 않고 내용만 바꿔도 “새 파일”로 인식하게 해준다. */
+function fingerprint(o){
+  let s;
+  try{ s = JSON.stringify(o); }catch(e){ return 'x'; }
+  let h = 0x811c9dc5;
+  for(let i=0;i<s.length;i++){
+    h = (h ^ s.charCodeAt(i)) >>> 0;
+    h = (h * 0x01000193) >>> 0;
+  }
+  return h.toString(36) + '-' + s.length.toString(36);
+}
+const DATA_FP = fingerprint(EMBEDDED_DATA);
+
+function storedBox(){
+  if(idbBox) return idbBox;
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){ return null; }
+}
+
+/* ---------- 저장소 ----------
+   사진이 많아지면 localStorage(약 5MB)로는 모자라므로 IndexedDB 를 주 저장소로 쓴다.
+   IndexedDB 는 기기 여유 공간에 맞춰 보통 수백 MB 까지 쓸 수 있다. */
+const BOOT_ERR_BOX = 'threadList';
+const IDB_NAME = 'crimescene_sms';
+const IDB_STORE = 'box';
+const IDB_KEY = 'main';
+let idbState = 'ok';        /* ok | unavailable | error */
+let idbBox = null;
+let saveBlocked = false;    /* 저장된 내용을 읽지 못했으면 덮어쓰지 않는다 */
+let saveWarned = false;
+let storeKind = 'localStorage';
+
+function idbOpen(){
+  return new Promise((res, rej)=>{
+    if(!self.indexedDB){ idbState = 'unavailable'; return rej(new Error('없음')); }
+    /* 파일을 직접 열면(file://) IndexedDB 를 쓸 수 없다.
+       브라우저에 따라 오류도 나지 않고 응답이 아예 오지 않아 화면이 멈추므로 먼저 걸러낸다. */
+    if(location.protocol === 'file:'){ idbState = 'unavailable'; return rej(new Error('파일 직접 열기')); }
+    let settled = false;
+    const finish = (fn, v)=>{ if(!settled){ settled = true; clearTimeout(timer); fn(v); } };
+    const timer = setTimeout(()=>{
+      if(!settled){ settled = true; idbState = 'unavailable'; rej(new Error('시간 초과')); }
+    }, 2500);
+    let rq;
+    try{ rq = indexedDB.open(IDB_NAME, 1); }
+    catch(e){ idbState = 'unavailable'; return finish(rej, e); }
+    rq.onupgradeneeded = ()=>{ try{ rq.result.createObjectStore(IDB_STORE); }catch(e){} };
+    rq.onsuccess = ()=>{ idbState = 'ok'; finish(res, rq.result); };
+    rq.onerror   = ()=>{ if(idbState !== 'unavailable') idbState = 'error'; finish(rej, rq.error || new Error('열기 실패')); };
+    rq.onblocked = ()=>{ idbState = 'unavailable'; finish(rej, new Error('차단됨')); };
+  });
+}
+/* “내용이 없음”과 “읽지 못함”은 완전히 다르다. 섞으면 읽기 실패 한 번에 사진이 날아간다. */
+function idbRead(){
+  return idbOpen().then(db=> new Promise(res=>{
+    let tx;
+    try{ tx = db.transaction(IDB_STORE, 'readonly'); }
+    catch(e){ return res({ok:false, value:null}); }
+    const rq = tx.objectStore(IDB_STORE).get(IDB_KEY);
+    rq.onsuccess = ()=> res({ok:true, value:rq.result || null});
+    rq.onerror   = ()=> res({ok:false, value:null});
+  })).catch(()=> ({ok:false, value:null}));
+}
+function idbWrite(v){
+  return idbOpen().then(db=> new Promise((res, rej)=>{
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(v, IDB_KEY);
+    tx.oncomplete = ()=> res(true);
+    tx.onerror    = ()=> rej(tx.error || new Error('저장 실패'));
+    tx.onabort    = ()=> rej(tx.error || new Error('저장 중단'));
+  }));
+}
+function idbClear(){
+  return idbOpen().then(db=> new Promise(res=>{
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).delete(IDB_KEY);
+    tx.oncomplete = ()=> res(true);
+    tx.onerror    = ()=> res(false);
+    tx.onabort    = ()=> res(false);
+  })).catch(()=> false);
+}
+let persistState = '확인 중';
+function askPersist(){
+  try{
+    if(!navigator.storage || !navigator.storage.persist){ persistState = '지원 안 함'; return Promise.resolve(); }
+    return (navigator.storage.persisted ? navigator.storage.persisted() : Promise.resolve(false))
+      .then(p=> p ? true : navigator.storage.persist())
+      .then(p=>{ persistState = p ? '켜짐' : '꺼짐'; })
+      .catch(()=>{ persistState = '알 수 없음'; });
+  }catch(e){ persistState = '알 수 없음'; return Promise.resolve(); }
+}
+let quotaText = '확인 중';
+function refreshQuota(){
+  try{
+    if(!navigator.storage || !navigator.storage.estimate){ quotaText = '알 수 없음'; return Promise.resolve(); }
+    return navigator.storage.estimate().then(e=>{
+      const mb = n => (n/1048576).toFixed(n < 104857600 ? 1 : 0) + ' MB';
+      quotaText = mb(e.usage||0) + ' 사용 / ' + mb(e.quota||0) + ' 사용 가능';
+    }).catch(()=>{ quotaText = '알 수 없음'; });
+  }catch(e){ quotaText = '알 수 없음'; return Promise.resolve(); }
+}
+
+/* 파일에서 막 읽어온 상태의 지문. 이후 내용이 달라지면 “이 기기에만 저장된 수정”이다 */
+let baseFp = null;
+
+function load(){
+  return idbRead().then(got=>{
+    let box = got.value;
+    if(!got.ok && idbState === 'error') saveBlocked = true;
+    storeKind = (idbState === 'ok') ? 'IndexedDB' : 'localStorage';
+    if(!box){
+      try{ box = JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){ box = null; }
+    }
+    if(box && box.data && box.version === DATA_VERSION && box.fp === DATA_FP){
+      idbBox = box;
+      baseFp = box.base || null;
+      return normalize(box.data);
+    }
+    if(!saveBlocked) wipeStored();
+    const fresh = normalize(deepCopy(EMBEDDED_DATA));
+    baseFp = fingerprint(fresh);
+    return fresh;
+  });
+}
+function hasLocalEdits(){
+  return !!baseFp && fingerprint(data) !== baseFp;
+}
+
+function save(){
+  try{ (data.lists||[]).forEach(ensurePeople); }catch(e){}
+  if(saveBlocked) return true;
+  const box = { version: DATA_VERSION, fp: DATA_FP, base: baseFp,
+                savedAt: new Date().toISOString(), data: data };
+  idbBox = box;
+  idbWrite(box).then(()=>{ saveWarned = false; }).catch(()=>{
+    if(!saveWarned){ saveWarned = true; toast('저장하지 못했습니다. 내보내기로 백업해 주세요.'); }
+  });
+  if(storageOK){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(box)); }catch(e){} }
+  return true;
+}
+
+function storageKB(){
+  try{ return Math.round(JSON.stringify({version:DATA_VERSION, data:data}).length/1024); }
+  catch(e){ return 0; }
+}
+
+/* ---------- 새 파일 자동 감지 (재설치·파일 교체 반영) ----------
+   설치된 앱은 캐시로도 열리기 때문에, 실행할 때마다 서버에 놓인 index.html 을
+   한 번 확인해서 내용이 다르면 캐시·저장분을 지우고 새 파일로 다시 연다. */
+const MARK_S = '/*__CS' + '_DATA_START__';
+const MARK_E = '/*__CS' + '_DATA_END__*/';
+
+function readFileData(txt){
+  const i = txt.indexOf(MARK_S), j = txt.indexOf(MARK_E);
+  if(i < 0 || j <= i) return null;
+  try{
+    const block = txt.slice(i, j).replace(MARK_S, '/*');
+    return (new Function(block + '\nreturn { v: DATA_VERSION, d: EMBEDDED_DATA };'))();
+  }catch(e){ return null; }
+}
+
+function forceUpdate(){
+  const go = ()=> location.replace(listUrl(curList().key));
+  const steps = [];
+  idbBox = null;
+  try{ steps.push(idbClear()); }catch(e){}
+  try{ localStorage.removeItem(STORE_KEY); LEGACY_KEYS.forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  try{
+    if(window.caches && caches.keys){
+      steps.push(caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))));
+    }
+  }catch(e){}
+  try{
+    if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+      steps.push(navigator.serviceWorker.getRegistrations().then(rs=>Promise.all(rs.map(r=>r.unregister()))));
+    }
+  }catch(e){}
+  Promise.all(steps).then(go, go);
+}
+
+function checkForUpdate(manual){
+  if(location.protocol.indexOf('http') !== 0){
+    if(manual) toast('로컬 서버(localhost)로 열었을 때만 확인할 수 있습니다');
+    return;
+  }
+  fetch('./index.html?_uc=' + Date.now(), {cache:'no-store'})
+    .then(r=> r.ok ? r.text() : Promise.reject())
+    .then(txt=>{
+      const got = readFileData(txt);
+      if(!got){ if(manual) toast('파일을 확인할 수 없습니다'); return; }
+      const fileFp = fingerprint(got.d);
+      const same = (got.v === DATA_VERSION) && (fileFp === DATA_FP);
+      const info = document.getElementById('updInfo');
+      if(info){
+        const lists = (got.d.lists||[]);
+        const threads = lists.reduce((a,x)=>a+(x.threads||[]).length,0);
+        const msgs = lists.reduce((a,x)=>a+(x.threads||[]).reduce((b,t)=>b+(t.messages||[]).length,0),0);
+        info.innerHTML = '서버 파일 버전 <b>' + esc(got.v) + '</b> · 지문 <b>' + esc(fileFp) + '</b><br>'
+          + '서버 파일 내용 <b>대화 ' + threads + '개 · 메시지 ' + msgs + '개</b><br>'
+          + '판정 <b>' + (same ? '지금 보이는 내용과 같음' : '다름 → 새 내용으로 교체') + '</b>';
+      }
+      if(same){ if(manual) toast('이미 최신 파일입니다'); return; }
+      const tag = got.v + '|' + fileFp;
+      let tried = null;
+      try{ tried = sessionStorage.getItem('cs_upd'); }catch(e){}
+      if(!manual && tried === tag){
+        toast('새 파일이 있는데 적용되지 않았습니다. 관리자 모드에서 “새 파일 확인”을 눌러주세요.');
+        return;
+      }
+      try{ sessionStorage.setItem('cs_upd', tag); }catch(e){}
+      toast('새 파일을 발견했습니다. 새 내용으로 다시 엽니다…');
+      setTimeout(forceUpdate, 700);
+    })
+    .catch(()=>{ if(manual) toast('서버에 연결할 수 없습니다. 서버 앱이 켜져 있는지 확인하세요.'); });
+}
+
+/* 옛 형식(threads 가 최상위)도 그대로 받아들여 새 형식으로 올려준다 */
+function normalize(d){
+  if(!d) d = {};
+  if(!Array.isArray(d.lists)){
+    const one = {
+      key: '기본',
+      title: d.listTitle || '메시지',
+      appName: '',
+      bottomPad: Number(d.bottomPad)||0,
+      threads: Array.isArray(d.threads) ? d.threads : (Array.isArray(d.rooms) ? d.rooms : [])
+    };
+    d = { appName: d.appName || '메시지', lists: [one] };
+  }
+  if(!d.appName) d.appName = '메시지';
+  /* 저장된 내용에 빈(null) 항목이 섞여 있어도 앱이 멈추지 않게 먼저 걸러낸다 */
+  d.lists = d.lists.filter(L=> L && typeof L === 'object');
+  if(Array.isArray(d.tree)){
+    d.tree = d.tree.filter(c1=> c1 && typeof c1 === 'object');
+    d.tree.forEach(c1=>{
+      if(Array.isArray(c1.children)) c1.children = c1.children.filter(c2=> c2 && typeof c2 === 'object');
+    });
+  }
+  if(!d.lists.length) d.lists = [{ key:'기본', label:'', title:'메시지', bottomPad:0, threads:[] }];
+
+  const usedKeys = [];
+  d.lists.forEach((L, i)=>{
+    L.title = L.title || '메시지';
+    if(L.label === undefined) L.label = '';     /* 소분류 표시 이름 (비면 주소용 이름 사용) */
+    delete L.appName;                            /* 목록별 앱 이름은 쓰지 않는다 (m/ 매니페스트로 대체) */
+    L.bottomPad = Math.max(0, Number(L.bottomPad)||0);
+    if(!Array.isArray(L.threads)) L.threads = Array.isArray(L.rooms) ? L.rooms : [];
+    L.threads = L.threads.filter(t=> t && typeof t === 'object');
+    if(Array.isArray(L.people)) L.people = L.people.filter(p=> p && typeof p === 'object');
+    delete L.rooms;
+    let k = String(L.key || L.title || ('목록'+(i+1))).trim() || ('목록'+(i+1));
+    while(usedKeys.indexOf(normKey(k)) !== -1) k = k + '_2';
+    usedKeys.push(normKey(k));
+    L.key = k;
+
+    if(!Array.isArray(L.people)) L.people = [];
+    if(L.alias && typeof L.alias !== 'object') L.alias = {};
+
+    L.threads.forEach(th=>{
+      if(!th.id) th.id = id();
+      if(!Array.isArray(th.messages)) th.messages = [];
+
+      /* ── 옛 형식 올려주기 ──
+         예전에는 대화마다 상대 이름·번호·사진을 따로 저장하고 메시지에 mine(보냄/받음)을 적었다.
+         이제는 이름을 인물 명단에 한 번만 두고, 메시지에는 보낸 사람 이름을 적는다. */
+      if(!Array.isArray(th.participants)){
+        const meName = String(d.meName || '나').trim() || '나';
+        const otherName = String(th.name || '상대방').trim() || '상대방';
+        th.participants = [
+          { id:id(), name:meName, sub:'', avatar:'', silo:0 },
+          { id:id(), name:otherName, sub:th.sub||'', avatar:th.avatar||'', silo:1 }
+        ];
+        th.messages.forEach(m=>{ m.senderName = m.mine ? meName : otherName; });
+        if(typeof th.listUnread === 'number' && th.listUnread >= 0){
+          th.per = th.per || {};
+          th.per[personId(meName)] = { unread: th.listUnread };
+        }
+        th.migratedFrom = undefined;
+      }
+      delete th.name; delete th.sub; delete th.avatar; delete th.listUnread; delete th.migratedFrom;
+      th.participants = th.participants.filter(p=> p && typeof p === 'object');
+      if(Array.isArray(th.messages)) th.messages = th.messages.filter(m=> m && typeof m === 'object');
+
+      let c = 0;
+      th.participants.forEach(p=>{
+        if(!p.id) p.id = id();
+        if(p.name === undefined) p.name = '';
+        if(p.sub === undefined) p.sub = '';
+        if(p.avatar === undefined) p.avatar = '';
+        if(p.silo === undefined || p.silo === null) p.silo = c % 2;
+        delete p.isMe;                 /* “나”는 저장하지 않고 폰에서 고른 사람으로 계산한다 */
+        c++;
+      });
+      th.isGroup = (th.isGroup !== undefined) ? !!th.isGroup : (th.participants.length > 2);
+      if(!Array.isArray(th.only)) th.only = [];
+      if(!th.per || typeof th.per !== 'object') th.per = {};
+
+      th.messages.forEach(m=>{
+        if(!m.id) m.id = id();
+        if(m.senderName === undefined){
+          const first = th.participants[0], second = th.participants[1] || first;
+          m.senderName = m.mine ? (first ? first.name : '나') : (second ? second.name : '');
+        }
+        delete m.mine;
+        if(m.text === undefined) m.text = '';
+        if(m.image === undefined) m.image = '';
+        if(m.time === undefined) m.time = '';
+        if(m.date === undefined) m.date = '';
+        if(m.status === undefined) m.status = '';
+        if(m.unread !== undefined) delete m.unread;
+      });
+    });
+  });
+  const keep = data;
+  data = d;                 /* ensureTree · ensurePeople 안에서 쓰는 도우미들이 data 를 참조한다 */
+  try{ ensureTree(d); } catch(e){}
+  data = keep;
+  try{ unifyCategories(d); } catch(e){}
+  try{ (d.lists||[]).forEach(ensurePeople); } catch(e){}   /* 사진을 인물 명단으로 모아 중복 제거 */   /* 중분류 하나 = 문자 앱 한 벌 */
+  data = d;
+  try{ d.lists.forEach(L=>ensurePeople(L)); } catch(e){}
+  data = keep;
+  return d;
+}
+
+function id(){ return 'x'+Math.random().toString(36).slice(2,9); }
+
+/* ---------- 대화 목록(세트) ---------- */
+function normKey(s){ return String(s||'').trim().toLowerCase().replace(/\s+/g,'_'); }
+function curList(){ return data.lists[listIdx] || data.lists[0]; }
+
+/* ============================================================
+   인물 · 이 기기에서 볼 “나”
+   목록 하나 = 사건 하나 = 문자 앱 한 벌.
+   대화 내용은 목록에 한 번만 쓰고, 폰마다 “나”만 고르면 그 사람의 문자 앱이 된다.
+   손님 화면에는 “나”가 참여한 대화만 보인다.
+   ============================================================ */
+/* ---------- 이 폰의 지점 잠금 ----------
+   폰 한 대는 한 지점만 본다. 처음 실행할 때 고르고, 그 뒤에는 바꿀 수 없다.
+   다른 지점 내용은 화면에 아예 나오지 않아 스포일러를 막는다.
+   (바꿔야 하면 주소 끝에 ?reset=1 을 붙여 이 기기 설정을 초기화한다) */
+const BRANCH_KEY = 'crimescene_sms_branch';
+let branchLock = null;              /* {id, name} — 기기마다 따로 저장된다 */
+function loadBranch(){
+  try{ const v = JSON.parse(localStorage.getItem(BRANCH_KEY)); branchLock = (v && typeof v === 'object') ? v : null; }
+  catch(e){ branchLock = null; }
+}
+function saveBranch(){
+  try{
+    if(branchLock) localStorage.setItem(BRANCH_KEY, JSON.stringify(branchLock));
+    else localStorage.removeItem(BRANCH_KEY);
+  }catch(e){}
+}
+function lockedC1(){
+  if(!branchLock || !data) return null;
+  const byId = (data.tree||[]).find(c=>c.id === branchLock.id);
+  if(byId){
+    if(branchLock.name !== byId.name){ branchLock.name = byId.name; saveBranch(); }
+    return byId;
+  }
+  const byName = (data.tree||[]).find(c=>c.name === branchLock.name);
+  if(byName){ branchLock = {id:byName.id, name:byName.name}; saveBranch(); return byName; }
+  return null;
+}
+/* PC(편집용)에서는 잠그지 않는다 — 제작자는 전체를 봐야 한다 */
+function branchLocked(){ return !wideAdmin() && !!lockedC1(); }
+function setBranch(c1){ branchLock = {id:c1.id, name:c1.name}; saveBranch(); }
+function listAllowed(L){
+  const lk = branchLocked() ? lockedC1() : null;
+  if(!lk || !L) return true;
+  const c = catOfList(L.key);
+  return !!(c && c.c1.id === lk.id);
+}
+function fixListForBranch(){
+  const lk = branchLocked() ? lockedC1() : null;
+  if(!lk || listAllowed(curList())) return;
+  const keys = [];
+  (lk.children||[]).forEach(c2=> (c2.lists||[]).forEach(k=> keys.push(k)));
+  for(const k of keys){ const i = findListIdx(k); if(i >= 0){ listIdx = i; return; } }
+}
+function enforceBranchLock(){
+  const lk = branchLocked() ? lockedC1() : null;
+  if(!lk) return;
+  if(treePath[0] !== lk.id){ treePath = [lk.id]; adminListPicked = false; adminThreadId = ''; }
+}
+function treeMinDepth(){ return branchLocked() ? 1 : 0; }
+
+const VIEW_KEY = 'crimescene_sms_me';
+let viewAs = {};                    /* {목록키: {id,name}} — 기기마다 따로 저장된다 */
+function loadView(){
+  try{ const v = JSON.parse(localStorage.getItem(VIEW_KEY)); viewAs = (v && typeof v === 'object') ? v : {}; }
+  catch(e){ viewAs = {}; }
+}
+function saveView(){ try{ localStorage.setItem(VIEW_KEY, JSON.stringify(viewAs)); }catch(e){} }
+
+/* 인물 id 는 이름에서 만들어 어느 기기에서 만들어도 같게 한다
+   (파일을 새로 받아도 폰에 고른 “나”가 그대로 유지되도록) */
+function personId(name){
+  const s = normKey(name);
+  let h = 0x811c9dc5;
+  for(let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = (h * 0x01000193) >>> 0; }
+  return 'p' + h.toString(36);
+}
+/* 새 인물의 id — 이름에서 만들되, 이미 쓰는 id 면 뒤에 번호를 붙여 겹치지 않게 한다.
+   (이름을 바꾼 인물의 id 는 예전 이름으로 만들어져 있어, 같은 이름을 다시 쓰면 겹칠 수 있다) */
+function newPersonId(L, name){
+  const base = personId(name);
+  const used = ((L && L.people) || []).map(p=>p && p.id);
+  let pid = base, n = 2;
+  while(used.indexOf(pid) !== -1){ pid = base + '_' + (n++); }
+  return pid;
+}
+/* 목록 안의 모든 참여자를 인물 명단으로 모은다 (이름 기준, id 는 한번 정해지면 유지) */
+function ensurePeople(L){
+  if(!L) return [];
+  if(!Array.isArray(L.people)) L.people = [];
+  /* 어쩌다 빈 항목이 섞여 들어가도 앱이 멈추지 않게 걸러낸다.
+     배열을 새로 만들지 않고 그 자리에서 지운다 — 새로 넣은 인물이 사라지지 않게 하기 위함 */
+  for(let i = L.people.length - 1; i >= 0; i--){
+    if(!L.people[i] || typeof L.people[i] !== 'object') L.people.splice(i, 1);
+  }
+  const byName = {};
+  const seenId = {};
+  L.people.forEach(p=>{
+    if(!p.id) p.id = personId(p.name);
+    /* 예전 파일에서 생긴 “같은 id 두 사람” 을 고친다 (뒤에 있는 사람에게 새 id 를 준다) */
+    if(seenId[p.id]){
+      const base = personId(p.name);
+      let pid = base, n = 2;
+      while(seenId[pid] || L.people.some(x=>x !== p && x && x.id === pid)){ pid = base + '_' + (n++); }
+      p.id = pid;
+    }
+    seenId[p.id] = 1;
+    if(p.avatar === undefined) p.avatar = '';
+    if(p.sub === undefined) p.sub = '';
+    if(p.silo === undefined) p.silo = 0;
+    byName[normKey(p.name)] = p;
+  });
+  (L.threads||[]).forEach(t=> (t.participants||[]).forEach(pt=>{
+    const k = normKey(pt.name);
+    if(!k) return;
+    let p = byName[k];
+    if(!p){
+      let pid = personId(pt.name), n = 2;
+      while(L.people.some(x=>x.id === pid)){ pid = personId(pt.name) + '_' + (n++); }
+      p = {id:pid, name:pt.name, sub:pt.sub||'', avatar:pt.avatar||'', silo:pt.silo||0};
+      byName[k] = p; L.people.push(p);
+    }
+    if(!p.avatar && pt.avatar) p.avatar = pt.avatar;
+    if(!p.sub && pt.sub) p.sub = pt.sub;
+    /* 사진은 인물 명단에 한 장만 둔다.
+       같은 사람이 여러 대화에 있어도 사진이 복사되지 않아 저장 공간이 크게 줄어든다. */
+    if(pt.avatar !== undefined) delete pt.avatar;
+    if(pt.silo !== undefined) delete pt.silo;
+  }));
+  return L.people;
+}
+function peopleOf(L){ return ensurePeople(L || curList()); }
+/* 찾기만 할 때는 명단을 다시 훑지 않는다 (화면을 그릴 때 자주 불린다) */
+function personById(L, pid){
+  const ps = (L && L.people) || [];
+  return pid ? (ps.find(p=>p && p.id===pid) || null) : null;
+}
+function personByName(L, name){
+  const k = normKey(name);
+  const ps = (L && L.people) || [];
+  return k ? (ps.find(p=>p && normKey(p.name)===k) || null) : null;
+}
+/* 참여자의 얼굴(사진·색)은 인물 명단에서 가져온다 */
+function faceOf(p){
+  if(!p) return { name:'', avatar:'', silo:0, sub:'' };
+  const L = curList();
+  const per = L ? personByName(L, p.name) : null;
+  return per || p;
+}
+/* 이 기기에서 고른 “나”. id 로 먼저 찾고, 못 찾으면 이름으로 찾아 고쳐 둔다 */
+function meId(){
+  const L = curList(); if(!L) return '';
+  const v = viewAs[L.key];
+  if(!v) return '';
+  const want = (typeof v === 'string') ? {id:v, name:''} : v;
+  const ps = peopleOf(L);
+  let p = want.id ? ps.find(x=>x.id === want.id) : null;
+  if(!p && want.name) p = ps.find(x=>normKey(x.name) === normKey(want.name));
+  if(!p){ delete viewAs[L.key]; saveView(); return ''; }
+  if(typeof v === 'string' || v.id !== p.id || v.name !== p.name){
+    viewAs[L.key] = {id:p.id, name:p.name}; saveView();
+  }
+  return p.id;
+}
+function mePerson(){ return personById(curList(), meId()); }
+function setMe(pid){
+  const L = curList(); if(!L) return;
+  const p = pid ? personById(L, pid) : null;
+  if(p) viewAs[L.key] = {id:p.id, name:p.name};
+  else delete viewAs[L.key];
+  saveView(); applyMeFlags();
+}
+/* 관리자 화면에서는 “나”를 아직 안 골랐어도 첫 인물 기준으로 보여준다 */
+function effMeId(){
+  const m = meId();
+  if(m) return m;
+  if(!isAdmin) return '';
+  const ps = peopleOf(curList());
+  return ps.length ? ps[0].id : '';
+}
+/* 참여자의 isMe 는 저장하지 않고, 고른 “나”에 맞춰 그때그때 계산한다 */
+function applyMeFlags(){
+  const L = curList(); if(!L) return;
+  const me = personById(L, effMeId());
+  const k = me ? normKey(me.name) : '';
+  (L.threads||[]).forEach(t=> (t.participants||[]).forEach(p=>{
+    try{
+      Object.defineProperty(p, 'isMe', {
+        value: (!!k && normKey(p.name) === k), enumerable:false, configurable:true, writable:true
+      });
+    }catch(e){ p.isMe = !!k && normKey(p.name) === k; }
+  }));
+}
+function inThread(th, name){
+  const k = normKey(name);
+  return !!k && (th.participants||[]).some(p=>normKey(p.name) === k);
+}
+/* 기본은 참여자 모두의 폰에 보인다.
+   th.only 에 사람을 지정하면 그 사람 폰에만 보인다 */
+function visibleTo(th, pid){
+  const only = th && th.only;
+  if(!Array.isArray(only) || !only.length) return true;
+  return only.indexOf(pid) >= 0;
+}
+/* 손님 화면에 보이는 대화 = 고른 “나”가 참여한 대화 */
+function visibleThreads(L){
+  const me = personById(L, effMeId());
+  if(!me) return [];
+  return (L.threads||[]).filter(t=> inThread(t, me.name) && visibleTo(t, me.id));
+}
+function threadsOfPerson(L, pid){
+  const p = personById(L, pid);
+  if(!p) return [];
+  return (L.threads||[]).filter(t=> inThread(t, p.name) && visibleTo(t, p.id));
+}
+/* 관리자 목록에 쓰는 대화 이름 (참여자 두 사람을 모두 보여준다) */
+function threadLabel(th){
+  if(!th) return '';
+  const ns = (th.participants||[]).map(p=>p.name).filter(Boolean);
+  return ns.length ? ns.join(' ↔ ') : '대화';
+}
+
+/* ---------- 폰마다 다르게 부르는 이름 ----------
+   L.alias = { 보는사람id: { 상대id: '부를 이름' } }
+   내용(대화·메시지)은 실제 이름 그대로 두고, 화면에 그릴 때만 바꿔 보여준다. */
+function aliasMap(L, viewerId){
+  if(!L || !viewerId) return {};
+  return (L.alias && L.alias[viewerId]) || {};
+}
+function setAlias(L, viewerId, targetId, name){
+  if(!L || !viewerId || !targetId) return;
+  if(!L.alias) L.alias = {};
+  if(!L.alias[viewerId]) L.alias[viewerId] = {};
+  const v = String(name||'').trim();
+  if(v) L.alias[viewerId][targetId] = v;
+  else delete L.alias[viewerId][targetId];
+  if(!Object.keys(L.alias[viewerId]).length) delete L.alias[viewerId];
+}
+/* 손님 화면에 보일 이름 (관리자 편집 화면에서는 실제 이름을 그대로 쓴다) */
+function dispName(name){
+  const L = curList(); if(!L) return name;
+  const vid = effMeId(); if(!vid) return name;
+  const p = personByName(L, name); if(!p) return name;
+  const a = aliasMap(L, vid)[p.id];
+  return (a && a.trim()) ? a.trim() : name;
+}
+
+/* 사진·번호는 인물 명단에만 있으므로 따로 퍼뜨릴 것이 없다.
+   (예전 파일에서 참여자에 남아 있던 사진만 정리한다) */
+function spreadPerson(L, p){
+  const k = normKey(p.name);
+  (L.threads||[]).forEach(t=> (t.participants||[]).forEach(x=>{
+    if(normKey(x.name) === k){ delete x.avatar; delete x.silo; delete x.sub; }
+  }));
+}
+/* 인물 이름 바꾸기 — 모든 대화의 참여자와 메시지 발신자까지 함께 바꾼다 */
+function renamePerson(L, p, newName){
+  const nn = String(newName||'').trim();
+  if(!nn || nn === p.name) return false;
+  const dup = peopleOf(L).find(x=> x !== p && normKey(x.name) === normKey(nn));
+  const old = normKey(p.name);
+  (L.threads||[]).forEach(t=>{
+    (t.participants||[]).forEach(x=>{ if(normKey(x.name) === old) x.name = nn; });
+    (t.messages||[]).forEach(m=>{ if(normKey(m.senderName) === old) m.senderName = nn; });
+  });
+  p.name = nn;
+  if(dup){
+    /* 같은 이름이 이미 있으면 한 사람으로 합친다 */
+    (L.threads||[]).forEach(t=>{
+      const seen = {};
+      t.participants = (t.participants||[]).filter(x=>{
+        const kk = normKey(x.name);
+        if(seen[kk]) return false;
+        seen[kk] = 1; return true;
+      });
+      if(t.per && t.per[dup.id]){
+        t.per[p.id] = Object.assign({}, t.per[dup.id], t.per[p.id]||{});
+        delete t.per[dup.id];
+      }
+      if(Array.isArray(t.only)){
+        t.only = t.only.map(x=> x === dup.id ? p.id : x).filter((x,i,a)=>a.indexOf(x)===i);
+      }
+    });
+    const v = viewAs[L.key];
+    if(v && ((typeof v === 'string' ? v : v.id) === dup.id)) viewAs[L.key] = {id:p.id, name:p.name};
+    if(L.alias){
+      if(L.alias[dup.id]){ L.alias[p.id] = Object.assign({}, L.alias[dup.id], L.alias[p.id]||{}); delete L.alias[dup.id]; }
+      Object.keys(L.alias).forEach(vw=>{
+        if(L.alias[vw][dup.id] !== undefined && L.alias[vw][p.id] === undefined) L.alias[vw][p.id] = L.alias[vw][dup.id];
+        delete L.alias[vw][dup.id];
+      });
+    }
+    L.people = L.people.filter(x=> x !== dup);
+    saveView();
+  }
+  spreadPerson(L, p);
+  applyMeFlags();
+  return true;
+}
+
+/* ---------- 대화 설정은 사람마다 따로 (안읽음 · 고정) ---------- */
+function perOf(th, pid){
+  if(!th || !pid) return {};
+  return (th.per && th.per[pid]) ? th.per[pid] : {};
+}
+function perSet(th, pid, key, val){
+  if(!th || !pid) return;
+  if(!th.per) th.per = {};
+  if(!th.per[pid]) th.per[pid] = {};
+  th.per[pid][key] = val;
+}
+function threadPinned(th){ return !!perOf(th, effMeId()).pinned; }
+
+/* ---------- 분류(폴더) 트리 — 관리자 정리용, 손님 화면에는 영향 없음 ----------
+   data.tree = [ { id, name(대분류), children:[ { id, name(중분류), lists:[목록 주소이름…] } ] } ] */
+function sanitizeKey(s){
+  return String(s||'').trim().replace(/\s+/g,'_').replace(/[?&#%\/\\]/g,'');
+}
+function makeListKey(c1name, c2name, label, self){
+  const base = [c1name, c2name, label].map(sanitizeKey).filter(Boolean).join('_') || '목록';
+  let k = base, n = 2;
+  while(data.lists.some(L=>L!==self && normKey(L.key)===normKey(k))){ k = base + '_' + n; n++; }
+  return k;
+}
+function listByKey(key){
+  const n = normKey(key);
+  return data.lists.find(L=>normKey(L.key)===n) || null;
+}
+function listsOfCat(c2){
+  return (c2.lists||[]).map(k=>listByKey(k)).filter(Boolean);
+}
+function catOfList(key){
+  const n = normKey(key);
+  for(const c1 of data.tree){
+    for(const c2 of c1.children){
+      if((c2.lists||[]).some(k=>normKey(k)===n)) return { c1:c1, c2:c2 };
+    }
+  }
+  return null;
+}
+function treeRemoveList(key){
+  const n = normKey(key);
+  data.tree.forEach(c1=>c1.children.forEach(c2=>{
+    c2.lists = (c2.lists||[]).filter(k=>normKey(k)!==n);
+  }));
+}
+function treeRenameListKey(oldKey, newKey){
+  const n = normKey(oldKey);
+  data.tree.forEach(c1=>c1.children.forEach(c2=>{
+    c2.lists = (c2.lists||[]).map(k=> normKey(k)===n ? newKey : k);
+  }));
+}
+function countInCat1(c1){
+  let threads = 0;
+  (c1.children||[]).forEach(c2=> listsOfCat(c2).forEach(L=> threads += (L.threads||[]).length));
+  return { subs:(c1.children||[]).length, threads:threads };
+}
+/* 중분류(테마) 하나에 문자 앱 한 벌 — 없으면 만들어 준다 */
+function listOfCat(c1, c2){
+  const have = listsOfCat(c2);
+  if(have.length) return have[0];
+  const L = { key: makeListKey(c1.name, c2.name, '', null), label:c2.name, title:'메시지',
+              bottomPad:0, threads:[], people:[], unified:true };
+  data.lists.push(L);
+  c2.lists = [L.key];
+  return L;
+}
+/* 중분류 하나 = 문자 앱 한 벌.
+   예전에 중분류 안에 여러 목록을 두던 방식은 하나로 합친다. */
+function unifyCategories(d){
+  const keep = data;
+  data = d;
+  try{
+    (d.tree||[]).forEach(c1=> (c1.children||[]).forEach(c2=>{
+      const members = (c2.lists||[])
+        .map(k=> d.lists.find(L=>normKey(L.key)===normKey(k)))
+        .filter(Boolean);
+      if(!members.length){ listOfCat(c1, c2); return; }
+      const target = members[0];
+      /* 나머지 목록의 대화·인물·별명을 첫 목록으로 옮긴다 */
+      members.slice(1).forEach(L=>{
+        ensurePeople(L);
+        (L.people||[]).forEach(p=>{
+          const has = (target.people||[]).some(x=>normKey(x.name) === normKey(p.name));
+          if(!has) target.people.push(p);
+        });
+        (L.threads||[]).forEach(t=> target.threads.push(t));
+        if(L.alias) target.alias = Object.assign({}, L.alias, target.alias||{});
+        d.lists = d.lists.filter(x=>x !== L);
+      });
+      target.label = c2.name;
+      target.unified = true;
+      c2.lists = [target.key];
+      ensurePeople(target);
+    }));
+  }catch(e){}
+  data = keep;
+}
+/* 트리 정리 + 옛 데이터 올려주기 */
+function ensureTree(d){
+  if(!Array.isArray(d.tree)) d.tree = [];
+  d.tree = d.tree.filter(c1=>c1 && typeof c1 === 'object');
+  d.tree.forEach(c1=>{
+    if(!c1.id) c1.id = id();
+    c1.name = String(c1.name || '분류');
+    if(!Array.isArray(c1.children)) c1.children = [];
+    c1.children.forEach(c2=>{
+      if(!c2.id) c2.id = id();
+      c2.name = String(c2.name || '분류');
+      if(!Array.isArray(c2.lists)) c2.lists = [];
+    });
+  });
+  /* 트리에 들어있지 않은 목록 찾기 */
+  const inTree = {};
+  d.tree.forEach(c1=>c1.children.forEach(c2=>c2.lists.forEach(k=>{ inTree[normKey(k)] = true; })));
+  const orphans = d.lists.filter(L=>!inTree[normKey(L.key)]);
+  if(!orphans.length){
+    /* 없어진 목록을 가리키는 항목 정리 */
+    d.tree.forEach(c1=>c1.children.forEach(c2=>{
+      c2.lists = c2.lists.filter(k=>d.lists.some(L=>normKey(L.key)===normKey(k)));
+    }));
+    return;
+  }
+  let target;
+  if(!d.tree.length){
+    /* 처음 분류를 도입할 때: 기존 목록을 “강남1호점 > 폐가” 아래로 넣는다 */
+    const c2 = { id:id(), name:'폐가', lists:[] };
+    d.tree.push({ id:id(), name:'강남1호점', children:[c2] });
+    target = { c1:d.tree[0], c2:c2 };
+  } else {
+    let c1 = d.tree.find(c=>c.name === '미분류');
+    if(!c1){ c1 = { id:id(), name:'미분류', children:[] }; d.tree.push(c1); }
+    let c2 = c1.children[0];
+    if(!c2){ c2 = { id:id(), name:'미분류', lists:[] }; c1.children.push(c2); }
+    target = { c1:c1, c2:c2 };
+  }
+  orphans.forEach(L=>{
+    if(L.label === undefined || L.label === ''){
+      const p = normKey(target.c2.name) + '_';
+      L.label = (normKey(L.key).indexOf(p) === 0) ? L.key.slice(target.c2.name.length + 1) : L.key;
+    }
+    const newKey = makeListKey(target.c1.name, target.c2.name, L.label, L);
+    if(normKey(newKey) !== normKey(L.key)) L.key = newKey;
+    target.c2.lists.push(L.key);
+  });
+  d.tree.forEach(c1=>c1.children.forEach(c2=>{
+    c2.lists = c2.lists.filter(k=>d.lists.some(L=>normKey(L.key)===normKey(k)));
+  }));
+}
+
+function requestedListKey(){
+  try{
+    const u = new URL(location.href);
+    let k = u.searchParams.get('list') || u.searchParams.get('l') || '';
+    if(!k && location.hash) k = decodeURIComponent(location.hash.slice(1));
+    return k || '';
+  }catch(e){ return ''; }
+}
+function findListIdx(key){
+  const n = normKey(key);
+  if(!n) return -1;
+  return data.lists.findIndex(L=>normKey(L.key)===n);
+}
+/* 마지막으로 본 목록을 기억해 둔다 (설치된 앱을 다시 켤 때 그 목록으로 시작) */
+const LAST_KEY = 'crimescene_sms_last_list';
+function isStandalone(){
+  try{
+    return (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches
+                               || window.matchMedia('(display-mode: fullscreen)').matches
+                               || window.matchMedia('(display-mode: minimal-ui)').matches))
+           || navigator.standalone === true;
+  }catch(e){ return false; }
+}
+function rememberList(){
+  try{ localStorage.setItem(LAST_KEY, curList().key); }catch(e){}
+}
+function savedListKey(){
+  try{ return localStorage.getItem(LAST_KEY) || ''; }catch(e){ return ''; }
+}
+function selectListFromUrl(){
+  const key = requestedListKey();
+  const saved = savedListKey();
+  /* 홈 화면 아이콘으로 실행한 경우에는 마지막으로 본 목록이 우선,
+     주소창으로 들어온 경우에는 주소에 적은 목록이 우선 */
+  const wanted = (isStandalone() && saved) ? saved : (key || saved);
+  if(!wanted) return;
+  const i = findListIdx(wanted);
+  if(i >= 0){ listIdx = i; return; }
+  if(key) setTimeout(()=>toast('“'+key+'” 목록을 찾지 못해 기본 목록을 엽니다'), 400);
+}
+function syncUrl(){
+  try{
+    const u = new URL(location.href);
+    u.searchParams.set('list', curList().key);
+    u.searchParams.delete('reset');
+    u.hash = '';
+    history.replaceState(history.state, '', u.pathname + u.search);
+  }catch(e){}
+}
+function listUrl(key){
+  try{
+    const u = new URL(location.href);
+    u.searchParams.set('list', key);
+    u.hash = '';
+    return u.pathname + u.search;
+  }catch(e){ return '?list=' + encodeURIComponent(key); }
+}
+
+/* ---------- 유틸 ---------- */
+const $ = s => document.querySelector(s);
+function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2000);
+}
+/* 파일/오프라인에서도 동작하는 자체 확인창 */
+function confirmDialog(message, onYes, yesLabel){
+  const box = $('#confirmBox');
+  $('#confirmMsg').textContent = message;
+  box.classList.add('show');
+  const yes = $('#confirmYes'), no = $('#confirmNo');
+  yes.textContent = yesLabel || '삭제';
+  const close = ()=>{ box.classList.remove('show'); yes.onclick=null; no.onclick=null; yes.textContent = '삭제'; };
+  yes.onclick = ()=>{ close(); onYes && onYes(); };
+  no.onclick = close;
+}
+function findThread(tid){ return curList().threads.find(t=>t.id===tid); }
+
+/* 번호처럼 보이거나 발신제한 등 이름이 아닌 항목은 회색 실루엣으로 */
+function isNumberish(name){
+  const n = (name||'').trim();
+  if(!n) return true;
+  if(/제한|수신|스팸|알림|Web/i.test(n)) return true;
+  return /^[\d\s\-+()]+$/.test(n);
+}
+function avColor(name){
+  let h=0; for(const c of (name||'?')) h = (h*31 + c.charCodeAt(0))>>>0;
+  return AV_COLORS[h % AV_COLORS.length];
+}
+function silhouetteSVG(){
+  return `<svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#c3c9d0"/>
+    <circle cx="50" cy="40" r="16" fill="#f4f6f8"/>
+    <path d="M50 60c-18 0-30 13-32 34h64c-2-21-14-34-32-34z" fill="#f4f6f8"/>
+  </svg>`;
+}
+/* 아바타 HTML: 사진 있으면 사진 / 번호류면 실루엣 / 이름이면 색+첫글자
+   (인물·참여자 모두 {name, avatar} 를 가지므로 그대로 쓸 수 있다) */
+function avatarInner(p){
+  if(!p) return silhouetteSVG();
+  const f = faceOf(p);
+  if(f.avatar) return `<img src="${f.avatar}">`;
+  if(isNumberish(p.name)) return silhouetteSVG();
+  return esc((dispName(p.name)||'?').trim().charAt(0));
+}
+function avatarStyle(p){
+  if(!p) return 'background:#e3e7ec';
+  if(faceOf(p).avatar || isNumberish(p.name)) return 'background:#e3e7ec';
+  return `background:${avColor(p.name)}`;
+}
+/* 대화에서 “나”가 아닌 사람들 / 대표 상대 */
+function othersOf(th){
+  const me = personById(curList(), effMeId());
+  const k = me ? normKey(me.name) : '';
+  const list = (th.participants||[]).filter(p=>normKey(p.name) !== k);
+  return list.length ? list : (th.participants||[]);
+}
+function mainOther(th){ return othersOf(th)[0] || null; }
+/* 손님 화면에 보이는 대화 제목 (상대 이름, 여러 명이면 쉼표로) */
+function threadTitle(th){
+  const os = othersOf(th).map(p=>dispName(p.name)).filter(Boolean);
+  if(!os.length) return '(이름 없음)';
+  return os.join(', ');
+}
+/* 상단 이름 아래 회색 글씨 (번호·부제) — 1:1 일 때만 */
+function threadSub(th){
+  const os = othersOf(th);
+  if(os.length !== 1) return os.length ? `수신자 ${os.length}명` : '';
+  const p = personByName(curList(), os[0].name);
+  return (p && p.sub) ? p.sub : (os[0].sub || '');
+}
+/* ---------- 날짜 / 시간 입력 변환 ---------- */
+/* 20260504 → 2026-05-04, 2026.5.4 / 26-5-4 / 0504 도 인식 */
+function parseDateInput(v){
+  const s = String(v||'').trim();
+  if(!s) return '';
+  const nums = s.match(/\d+/g);
+  if(!nums) return null;
+  const digits = nums.join('');
+  let y, mo, da;
+  if(nums.length >= 3){ y = +nums[0]; mo = +nums[1]; da = +nums[2]; }
+  else if(digits.length === 8){ y = +digits.slice(0,4); mo = +digits.slice(4,6); da = +digits.slice(6,8); }
+  else if(digits.length === 6){ y = 2000 + (+digits.slice(0,2)); mo = +digits.slice(2,4); da = +digits.slice(4,6); }
+  else if(nums.length === 2){ y = new Date().getFullYear(); mo = +nums[0]; da = +nums[1]; }
+  else if(digits.length === 4){ y = new Date().getFullYear(); mo = +digits.slice(0,2); da = +digits.slice(2,4); }
+  else return null;
+  if(y < 100) y += 2000;
+  if(!(mo>=1 && mo<=12) || !(da>=1 && da<=31)) return null;
+  const d = new Date(y, mo-1, da);
+  if(d.getFullYear()!==y || d.getMonth()!==mo-1 || d.getDate()!==da) return null;
+  return `${y}-${String(mo).padStart(2,'0')}-${String(da).padStart(2,'0')}`;
+}
+/* 1450 → 오후 2:50, 930 → 오전 9:30, "오후 2:50" 은 그대로 */
+function parseTimeInput(v){
+  const s = String(v||'').trim();
+  if(!s) return '';
+  let ampm = '';
+  if(/오전|AM|am|Am/.test(s)) ampm = '오전';
+  if(/오후|PM|pm|Pm/.test(s)) ampm = '오후';
+  const nums = s.replace(/[^\d]/g,'');
+  if(!nums) return null;
+  let h, mi;
+  if(nums.length <= 2){ h = +nums; mi = 0; }
+  else if(nums.length === 3){ h = +nums.slice(0,1); mi = +nums.slice(1); }
+  else if(nums.length === 4){ h = +nums.slice(0,2); mi = +nums.slice(2); }
+  else return null;
+  if(mi > 59) return null;
+  if(ampm){
+    if(h < 1 || h > 12) return null;
+  } else {
+    if(h > 23) return null;
+    ampm = h < 12 ? '오전' : '오후';
+    h = (h % 12) || 12;
+  }
+  return `${ampm} ${h}:${String(mi).padStart(2,'0')}`;
+}
+function formatKoreanDate(iso){
+  if(!iso) return '';
+  const p = String(iso).split('-');
+  if(p.length!==3) return iso;
+  const y=+p[0], mo=+p[1], da=+p[2];
+  const dObj = new Date(y, mo-1, da);
+  if(isNaN(dObj)) return iso;
+  const wd = ['일','월','화','수','목','금','토'][dObj.getDay()];
+  return `${y}년 ${mo}월 ${da}일 ${wd}요일`;
+}
+
+/* ---------- 안 읽음 개수 ---------- */
+/* 내가 마지막으로 보낸 시점 이후에 상대가 보낸 메시지 개수.
+   마지막 메시지가 보낸 메시지(내 메시지)면 0이 되고,
+   내가 한 번도 보낸 적이 없으면 받은 메시지 전체 개수. */
+function autoUnreadFor(th, pid){
+  const p = personById(curList(), pid);
+  if(!p) return 0;
+  const k = normKey(p.name);
+  const msgs = th.messages || [];
+  const mine = m => normKey(m.senderName) === k;
+  let lastMine = -1;
+  for(let i = msgs.length-1; i >= 0; i--){ if(mine(msgs[i])){ lastMine = i; break; } }
+  let n = 0;
+  for(let i = lastMine+1; i < msgs.length; i++){ if(!mine(msgs[i])) n++; }
+  return n;
+}
+function unreadOf(th, pid){
+  const v = perOf(th, pid).unread;
+  if(typeof v === 'number' && v >= 0) return v;
+  return autoUnreadFor(th, pid);
+}
+function autoUnread(th){ return autoUnreadFor(th, effMeId()); }
+function threadUnread(th){ return unreadOf(th, effMeId()); }
+
+/* ---------- 목록 정렬 / 시간 표시 ---------- */
+/* "오후 9:12" → 하루 중 분 단위 값 */
+function timeToMinutes(s){
+  const str = String(s||'');
+  const m = str.match(/(\d{1,2}):(\d{2})/);
+  if(!m) return 0;
+  let h = +m[1];
+  const mi = +m[2];
+  if(/오후|PM|pm/.test(str) && h < 12) h += 12;
+  if(/오전|AM|am/.test(str) && h === 12) h = 0;
+  return h*60 + mi;
+}
+/* 대화의 마지막 메시지가 언제인지 (날짜는 바뀌는 날 첫 메시지에만 있으므로 누적해서 찾는다) */
+function lastMsgWhen(th){
+  const msgs = th.messages || [];
+  if(!msgs.length) return null;
+  let date = '';
+  for(let i = 0; i < msgs.length; i++){ if(msgs[i].date) date = msgs[i].date; }
+  const last = msgs[msgs.length-1];
+  return { date: date, time: last.time || '', minutes: timeToMinutes(last.time) };
+}
+/* “오늘”로 볼 기준 날짜. 목록마다 지정할 수 있고, 비어 있으면 실제 오늘. */
+function refToday(){
+  const s = String((curList().today || '')).trim();
+  if(s){
+    const p = s.split('-');
+    const y = +p[0], m = +p[1], d = +p[2];
+    if(y && m && d){
+      const dt = new Date(y, m-1, d);
+      if(!isNaN(dt)) return { y:y, m:m, d:d, date:dt, fixed:true };
+    }
+  }
+  const n = new Date();
+  return { y:n.getFullYear(), m:n.getMonth()+1, d:n.getDate(),
+           date:new Date(n.getFullYear(), n.getMonth(), n.getDate()), fixed:false };
+}
+/* 정렬용 숫자 (날짜가 없으면 기준 날짜로 본다) */
+function threadSortValue(th){
+  const w = lastMsgWhen(th);
+  if(!w) return -1;
+  let y, m, d;
+  if(w.date){ const p = w.date.split('-'); y = +p[0]; m = +p[1]; d = +p[2]; }
+  if(!(y && m && d)){ const t = refToday(); y = t.y; m = t.m; d = t.d; }
+  return (y*10000 + m*100 + d) * 2000 + w.minutes;
+}
+/* 목록 오른쪽 표시: 오늘이면 시간, 어제면 “어제”, 그보다 전이면 “9월 8일” */
+function listTimeLabel(th){
+  const w = lastMsgWhen(th);
+  if(!w) return '';
+  if(!w.date) return w.time;
+  const p = w.date.split('-');
+  const y = +p[0], m = +p[1], d = +p[2];
+  if(!(y && m && d)) return w.time;
+  const ref = refToday();
+  const target = new Date(y, m-1, d);
+  const diff = Math.round((ref.date - target) / 86400000);
+  if(diff === 0) return w.time;
+  if(diff === 1) return '어제';
+  if(y !== ref.y) return `${y}. ${m}. ${d}.`;   /* 기준 날짜와 해가 다르면 연도까지 */
+  return `${m}월 ${d}일`;
+}
+/* 고정한 대화가 위, 그다음은 최신 메시지 순(자동 정렬을 끄면 저장된 순서) */
+function orderedThreads(L){
+  const auto = L.autoSort !== false;
+  return visibleThreads(L).map((t,i)=>({t:t, i:i})).sort((a,b)=>{
+    const pa = threadPinned(a.t)?1:0, pb = threadPinned(b.t)?1:0;
+    if(pa !== pb) return pb - pa;
+    if(auto){
+      const sa = threadSortValue(a.t), sb = threadSortValue(b.t);
+      if(sa !== sb) return sb - sa;
+    }
+    return a.i - b.i;
+  }).map(x=>x.t);
+}
+
+/* ---------- 하단 여백 ----------
+   폰 기종마다 다른 값이라 “이 기기에만” 따로 저장한다.
+   기기 값이 없으면 파일에 담긴 기본값을 쓴다. 내용을 업데이트해도 기기 값은 유지된다. */
+const PAD_KEY = 'crimescene_sms_pad';
+function devicePad(){
+  try{ const v = localStorage.getItem(PAD_KEY); return (v === null || v === '') ? null : Math.max(0, Number(v)||0); }
+  catch(e){ return null; }
+}
+function setDevicePad(v){
+  try{
+    if(v === null) localStorage.removeItem(PAD_KEY);
+    else localStorage.setItem(PAD_KEY, String(Math.max(0, Number(v)||0)));
+  }catch(e){}
+}
+function filePad(){ const L = curList(); return Math.max(0, Number(L && L.bottomPad)||0); }
+function effPad(){ const d = devicePad(); return (d === null) ? filePad() : d; }
+
+/* ---------- 목록 렌더 ---------- */
+function applyBottomPad(){
+  document.getElementById('phone').style.setProperty('--safe-b', effPad()+'px');
+}
+function previewText(msg){
+  if(!msg) return '';
+  if(msg.text) return msg.text.replace(/\n/g,' ');
+  if(msg.image) return '사진';
+  return '';
+}
+function renderList(){
+  rememberList();        /* 지금 보고 있는 목록을 기억 (다음 실행 때 이 목록으로 시작) */
+  setThemeColor(THEME_LIST);
+  applyBottomPad();
+  applyAppIdentity();
+  const L = curList();
+  applyMeFlags();
+  $('#listTitle').textContent = L.title || '메시지';
+  const el = $('#threadList'); el.innerHTML = '';
+  const shown = orderedThreads(L);
+  if(!shown.length){
+    el.innerHTML = !meId()
+      ? '<div class="empty">이 폰에서 볼 사람을 아직 고르지 않았습니다.<br>관리자 모드 → 등장인물에서<br><b>“이 사람으로 보기”</b>를 눌러 정하세요.<br><br>(제목을 5초 길게 누르면<br>관리자 모드로 들어갑니다)</div>'
+      : '<div class="empty">대화가 없습니다.<br>관리자 모드에서 추가하세요.<br><br>(제목을 5초 길게 누르면<br>관리자 모드로 들어갑니다)</div>';
+    updateAppBadge(0);
+    return;
+  }
+  let total = 0;
+  shown.forEach(th=>{
+    const last = th.messages[th.messages.length-1];
+    const preview = previewText(last);
+    const time = listTimeLabel(th);
+    const unread = threadUnread(th);
+    const other = mainOther(th);
+    total += unread;
+    const div = document.createElement('div');
+    div.className = 'thread';
+    div.innerHTML = `
+      <div class="avatar" style="${avatarStyle(other)}">${avatarInner(other)}</div>
+      <div class="thread-meta">
+        <div class="thread-name-row">
+          <span class="thread-name ${unread?'unreadname':''}">${esc(threadTitle(th))}</span>
+          ${threadPinned(th) ? '<span class="thread-pin">📌</span>' : ''}
+        </div>
+        <div class="thread-preview ${unread?'unread':''}">${esc(preview)}</div>
+      </div>
+      <div class="thread-right">
+        <span class="thread-time">${esc(time)}</span>
+        ${unread>0 ? `<span class="thread-badge">${unread>999?'999+':unread}</span>`:''}
+      </div>`;
+    div.onclick = ()=> openThread(th.id);
+    el.appendChild(div);
+  });
+  updateAppBadge(total);
+}
+/* 이 폰을 쓸 지점 고르기 — 지점 이름만 보여준다 (대화 내용은 나오지 않는다) */
+function renderBranchPicker(){
+  const box = $('#pickBranch');
+  if(!box) return;
+  const list = $('#branchList');
+  list.innerHTML = '';
+  (data.tree||[]).forEach(c1=>{
+    const cnt = countInCat1(c1);
+    const row = document.createElement('div');
+    row.className = 'bp-row';
+    row.innerHTML = `
+      <div class="bp-name">${esc(c1.name)}<div class="bp-cnt">테마 ${cnt.subs}개</div></div>
+      <span class="bp-go">이 지점으로</span>`;
+    row.onclick = ()=>{
+      setBranch(c1);
+      box.classList.remove('show');
+      fixListForBranch();
+      isAdmin = true;
+      renderList();
+      openAdmin(true);
+      toast('“' + c1.name + '” 지점으로 설정했습니다');
+    };
+    list.appendChild(row);
+  });
+  box.classList.add('show');
+}
+function updateAppBadge(total){
+  try {
+    if(navigator.setAppBadge){
+      if(total > 0) navigator.setAppBadge(total);
+      else if(navigator.clearAppBadge) navigator.clearAppBadge();
+    }
+  } catch(e){}
+}
+
+/* ---------- 대화방 렌더 ---------- */
+function openThread(tid){
+  currentThreadId = tid;
+  const th = findThread(tid);
+  if(!th) return;
+  const other = mainOther(th);
+  $('#roomName').textContent = threadTitle(th);
+  $('#roomSub').textContent = threadSub(th);
+  const av = $('#roomAv');
+  av.style.cssText = avatarStyle(other);
+  av.innerHTML = avatarInner(other);
+  renderMessages(th);
+  $('#listScreen').style.display = 'none';
+  $('#roomScreen').classList.add('active');
+  const m = $('#messages'); m.scrollTop = m.scrollHeight;
+  setThemeColor(THEME_ROOM);
+  pushView('room');
+}
+function backToList(){
+  $('#roomScreen').classList.remove('active');
+  $('#listScreen').style.display = 'flex';
+  renderList();
+}
+function renderMessages(th){
+  const box = $('#messages'); box.innerHTML = '';
+  const msgs = th.messages;
+
+  /* 각 메시지가 속한 날짜를 먼저 계산 (날짜는 바뀌는 날 첫 메시지에만 입력) */
+  const eff = [];
+  let cd = null;
+  msgs.forEach(m=>{ if(m.date && m.date !== cd) cd = m.date; eff.push(cd); });
+
+  let shownDate = null;
+  let lastSender = null;
+  msgs.forEach((msg, i)=>{
+    if(eff[i] && eff[i] !== shownDate){
+      const dv = document.createElement('div');
+      dv.className = 'date-divider';
+      dv.innerHTML = `<span>${esc(formatKoreanDate(eff[i]))}</span>`;
+      box.appendChild(dv);
+      shownDate = eff[i];
+      lastSender = null;
+    }
+    /* 보낸 사람이 “이 폰의 나”면 오른쪽(파란 말풍선) */
+    const p = partOf(th, msg.senderName) || {name:msg.senderName, isMe:false, avatar:'', silo:0};
+    const mine = !!p.isMe;
+    const row = document.createElement('div');
+    row.className = 'msg-row' + (mine?' mine':'');
+    row.dataset.date = eff[i] || '';
+
+    /* 상대 아바타·이름은 보낸 사람이 바뀐 첫 줄에만 표시 */
+    const headOfRun = (lastSender !== normKey(msg.senderName));
+    let avHtml = '';
+    if(!mine){
+      avHtml = headOfRun
+        ? `<div class="m-av" style="${avatarStyle(p)}">${avatarInner(p)}</div>`
+        : `<div class="m-av spacer"></div>`;
+    }
+    const senderHtml = (!mine && headOfRun && th.isGroup)
+      ? `<div class="m-sender">${esc(dispName(p.name))}</div>` : '';
+
+    let bubbleHtml;
+    if(msg.image){
+      bubbleHtml = `<div class="bubble img-bubble" data-photo="1">
+          <img src="${msg.image}">
+          ${msg.text?`<div class="cap">${esc(msg.text)}</div>`:''}
+        </div>`;
+    } else {
+      bubbleHtml = `<div class="bubble">${esc(msg.text)}</div>`;
+    }
+
+    const statusHtml = (mine && msg.status) ? `<span class="m-status">${esc(msg.status)}</span>` : '';
+    const infoHtml = `<div class="m-info">${statusHtml}<span class="m-time">${esc(msg.time||'')}</span></div>`;
+
+    row.innerHTML = `
+      ${avHtml}
+      <div class="m-col">
+        ${senderHtml}
+        <div class="m-line">
+          ${bubbleHtml}
+          ${infoHtml}
+        </div>
+      </div>`;
+    const ph = row.querySelector('[data-photo]');
+    if(ph) ph.onclick = ()=> openPhoto(msg.image);
+    box.appendChild(row);
+    lastSender = normKey(msg.senderName);
+  });
+}
+function partOf(th, name){
+  const k = normKey(name);
+  return (th.participants||[]).find(p=>normKey(p.name) === k) || null;
+}
+
+/* 사진 크게 보기 */
+function openPhoto(src){
+  $('#photoViewerImg').src = src;
+  $('#photoViewer').classList.add('show');
+  setThemeColor('#000000');
+  pushView('photo');
+}
+function closePhoto(){
+  $('#photoViewer').classList.remove('show');
+  $('#photoViewerImg').src = '';
+  setThemeColor($('#roomScreen').classList.contains('active') ? THEME_ROOM : THEME_LIST);
+}
+
+/* ---------- 앱 이름 / 매니페스트 / 설치 ---------- */
+function appNameOf(){
+  return (String((data && data.appName) || '').trim()) || '메시지';
+}
+/* 홈 화면 아이콘에 쓰일 이름을 화면 제목에도 반영한다.
+   (설치용 설정은 함께 올리는 manifest.webmanifest 파일 하나만 쓴다) */
+function applyAppIdentity(){
+  const nm = appNameOf();
+  document.title = nm;
+  const at = document.getElementById('appleTitle'); if(at) at.content = nm;
+}
+
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredInstall = e;
+  refreshAdminInfo();      /* 설치 가능 표시를 바로 갱신 */
+});
+window.addEventListener('appinstalled', ()=>{ deferredInstall = null; refreshAdminInfo(); });
+
+/* 설치가 안 될 때 원인을 한 화면에 모아 보여준다 */
+function runDiag(){
+  const out = [];
+  const ua = navigator.userAgent || '';
+  const cm = ua.match(/Chrome\/(\d+)/);
+  const cv = cm ? Number(cm[1]) : 0;
+  const inApp = /; wv\)|\bwv\b|KAKAOTALK|FBAN|FB_IAB|Instagram|NAVER|Line\//i.test(ua);
+  out.push('코드 버전: ' + CODE_VERSION + ' / 파일 버전: ' + DATA_VERSION);
+  out.push('브라우저: ' + (cm ? ('Chrome ' + cm[1]) : '크롬 아님 또는 확인 불가'));
+  out.push('버전 판정: ' + (cv === 0 ? '확인 불가' : (cv >= 76 ? '앱 설치 지원 버전' : '너무 오래된 버전 — 크롬 업데이트 필요')));
+  out.push('내장 브라우저: ' + (inApp ? '예 — 크롬 앱에서 직접 열어야 설치됩니다' : '아니오'));
+  out.push('https(보안) 상태: ' + (window.isSecureContext ? '정상' : '아님 — 설치 불가'));
+  out.push('서비스워커 지원: ' + (('serviceWorker' in navigator) ? '지원' : '지원 안 함'));
+  out.push('서비스워커 상태: ' + swState);
+  out.push('설치 신호(beforeinstallprompt): ' + (deferredInstall ? '받음' : '아직 없음'));
+  const box = document.getElementById('diagOut');
+  box.style.display = 'block';
+  box.textContent = out.join('\n') + '\n서버 응답 확인 중…';
+  const jobs = [];
+  jobs.push(fetch('./sw.js?diag=' + Date.now(), {cache:'no-store'})
+    .then(r=> 'sw.js 응답: ' + r.status + ' / ' + (r.headers.get('content-type')||'?'))
+    .catch(e=> 'sw.js 응답: 실패 (' + e + ')'));
+  jobs.push((('serviceWorker' in navigator) ? navigator.serviceWorker.getRegistrations() : Promise.resolve([]))
+    .then(rs=> '등록된 서비스워커: ' + rs.length + '개')
+    .catch(()=> '등록 목록 확인 실패'));
+  Promise.all(jobs).then(extra=>{ box.textContent = out.concat(extra).join('\n'); });
+}
+
+/* 관리자 정보란(서비스워커 / 설치 가능)만 다시 그린다 */
+function refreshAdminInfo(){
+  const sw = document.getElementById('swState');
+  if(sw) sw.textContent = swState;
+  const ins = document.getElementById('canInstall');
+  if(ins) ins.textContent = deferredInstall ? '예 — 설치 버튼을 누르세요' : '아직 아님';
+  const sk = document.getElementById('storeKind'); if(sk) sk.textContent = storeKind;
+  const ps = document.getElementById('persistState'); if(ps) ps.textContent = persistState;
+  const qt = document.getElementById('quotaText'); if(qt) qt.textContent = quotaText;
+}
+function installApp(){
+  if(deferredInstall){
+    deferredInstall.prompt();
+    deferredInstall.userChoice.finally(()=>{ deferredInstall = null; });
+    return;
+  }
+  if(location.protocol === 'file:'){
+    toast('파일로 직접 연 상태에서는 설치할 수 없습니다. 로컬 서버(localhost)로 여세요.');
+    return;
+  }
+  if(!window.isSecureContext){
+    toast('localhost 또는 https 로 접속해야 앱 설치가 가능합니다.');
+    return;
+  }
+  toast('크롬 메뉴 ⋮ → “앱 설치” 또는 “홈 화면에 추가”를 눌러주세요.');
+}
+
+/* ============================================================
+   관리자 모드
+   ============================================================ */
+function openAdmin(fromTop){
+  isAdmin = true;
+  $('#modePill').classList.add('show');
+  $('#adminOverlay').classList.add('active');
+  setThemeColor(THEME_ADMIN);
+  applyMeFlags();
+  if(fromTop){
+    /* 처음 설치한 기기 — 대분류(지점 잠금이면 그 지점)부터 고르게 한다 */
+    const lk = branchLocked() ? lockedC1() : null;
+    treePath = lk ? [lk.id] : [];
+    adminListPicked = false; adminThreadId = '';
+  } else {
+    /* 지금 보고 있는 목록이 속한 폴더를 펼친 채로, 그 테마를 고른 상태로 연다 */
+    try{
+      const L = curList();
+      const c = L ? catOfList(L.key) : null;
+      if(c){ treePath = [c.c1.id, c.c2.id]; adminListPicked = true; }
+      else { treePath = []; adminListPicked = false; }
+    }catch(e){ treePath = []; adminListPicked = false; }
+  }
+  renderAdminHome(true);
+  pushView('admin');
+}
+function closeAdmin(){
+  $('#adminOverlay').classList.remove('active');
+  renderList();
+}
+function guestMode(){
+  isAdmin = false;
+  $('#modePill').classList.remove('show');
+  /* 관리자(⋮) 버튼은 손님 화면에도 그대로 보이지만 눌러도 아무 일도 하지 않는다 */
+  toast('손님 모드로 전환되었습니다');
+  if($('#adminOverlay').classList.contains('active')) goBack();
+  else backToList();
+}
+
+/* ----- 분류(폴더) 탐색 화면 ----- */
+let treePath = [];          /* [] | [지점id] | [지점id, 테마id] */
+let adminListPicked = false;/* 특정 테마(문자 앱 한 벌)를 “열기”로 고른 상태인지 */
+let editingNode = '';       /* 이름 편집 중인 항목 (c1:id / c2:id / P:인물id) */
+let foldState = { pad:true };   /* 접힘 상태 (기본 접힘) */
+
+function curC1(){ return treePath[0] ? data.tree.find(c=>c.id===treePath[0]) : null; }
+function curC2(){ const c1 = curC1(); return (c1 && treePath[1]) ? (c1.children||[]).find(c=>c.id===treePath[1]) : null; }
+function listLabel(L){ return (L.label && L.label.trim()) ? L.label : L.key; }
+function listPathText(L){
+  const c = catOfList(L.key);
+  return c ? (c.c1.name + ' › ' + c.c2.name) : '미분류';
+}
+function breadcrumbHtml(){
+  const c1 = curC1(), c2 = curC2();
+  if(!c1) return '<span class="crumb-txt">전체 분류</span>';
+  return '<span class="crumb-txt">' + esc(c1.name) + (c2 ? '<span class="sep">›</span>' + esc(c2.name) : '') + '</span>';
+}
+function nameEditorHtml(nodeId, name, keyValue){
+  /* 목록이면 표시 이름 + 주소용 이름 두 칸, 폴더면 이름 한 칸 */
+  if(keyValue === null){
+    return `
+      <div class="field" style="margin:8px 0 0">
+        <label>이름</label>
+        <input id="nodeName" value="${esc(name)}">
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-primary btn-sm" id="nodeSave">저장</button>
+        <button class="btn btn-ghost btn-sm" id="nodeCancel">취소</button>
+      </div>`;
+  }
+  return `
+    <div class="field" style="margin:8px 0 0">
+      <label>이름 (관리자 화면 표시용)</label>
+      <input id="nodeName" value="${esc(name)}">
+    </div>
+    <div class="field">
+      <label>주소용 이름 (?list= 뒤에 붙는 이름)</label>
+      <input id="nodeKey" value="${esc(keyValue)}">
+      <div class="hint" style="margin-top:4px">주소를 바꾸면 예전 주소(<b>?list=…</b>)로 저장해 둔 링크는 열리지 않습니다.
+        바뀐 주소를 다시 알려주세요.</div>
+    </div>
+    <div class="row-actions">
+      <button class="btn btn-primary btn-sm" id="nodeSave">저장</button>
+      <button class="btn btn-ghost btn-sm" id="nodeAuto">경로에서 자동 생성</button>
+      <button class="btn btn-ghost btn-sm" id="nodeCancel">취소</button>
+    </div>`;
+}
+function treeItemsHtml(){
+  const c1 = curC1(), c2 = curC2();
+  let html = '';
+  if(!c1){
+    if(!data.tree.length) return '<div class="hint">분류가 없습니다. 아래에서 새 지점을 만드세요.</div>';
+    data.tree.forEach(node=>{
+      const cnt = countInCat1(node);
+      const editing = (editingNode === 'c1:' + node.id);
+      html += `
+        <div class="admin-list-item" data-sort="${node.id}">
+          <div class="top">
+            <div style="min-width:0">
+              <div class="node-name" data-rename="c1:${node.id}">${esc(node.name)}<span class="pen">✎</span></div>
+              <div class="rsub">테마 ${cnt.subs}개 · 대화 ${cnt.threads}개</div>
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-ghost btn-sm" data-enter="${node.id}">열기</button>
+              <button class="btn btn-danger btn-sm" data-cdel="c1:${node.id}">삭제</button>
+            </div>
+          </div>
+          ${editing ? nameEditorHtml('c1:'+node.id, node.name, null) : ''}
+        </div>`;
+    });
+    return html;
+  }
+  if(!c2){
+    if(!c1.children.length) return '<div class="hint">테마가 없습니다. 아래에서 새 테마를 만드세요.</div>';
+    c1.children.forEach(node=>{
+      const editing = (editingNode === 'c2:' + node.id);
+      const L = listsOfCat(node)[0];
+      const opened = L && data.lists.indexOf(L) === listIdx && adminListPicked;
+      html += `
+        <div class="admin-list-item ${opened?'on':''}" data-sort="${node.id}">
+          <div class="top">
+            <div style="min-width:0">
+              <div class="node-name" data-rename="c2:${node.id}">${esc(node.name)}<span class="pen">✎</span>
+                ${opened?'<span class="me-tag">보는 중</span>':''}</div>
+              <div class="rsub">등장인물 ${L?peopleOf(L).length:0}명 · 대화 ${L?L.threads.length:0}개</div>
+              ${L?`<div class="rsub">?list=${esc(L.key)}</div>`:''}
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-ghost btn-sm" data-enter="${node.id}">열기</button>
+              <button class="btn btn-danger btn-sm" data-cdel="c2:${node.id}">삭제</button>
+            </div>
+          </div>
+          ${editing ? nameEditorHtml('c2:'+node.id, node.name, L?L.key:null) : ''}
+        </div>`;
+    });
+    return html;
+  }
+  /* 테마 안 = 등장인물 명단 (대화 내용은 이 테마에 한 벌만 있다) */
+  const L = listOfCat(c1, c2);
+  const ps = peopleOf(L);
+  if(!ps.length) return '<div class="hint">등장인물이 없습니다. 아래에서 새 인물을 만드세요.<br>인물을 만든 뒤 대화를 추가하면 됩니다.</div>';
+  const myId = meId();
+  const meP = myId ? personById(L, myId) : null;
+  ps.forEach(p=>{
+    const editing = (editingNode === 'P:' + p.id);
+    const n = threadsOfPerson(L, p.id).length;
+    const alias = (myId && p.id !== myId) ? (aliasMap(L, myId)[p.id] || '') : null;
+    html += `
+      <div class="admin-list-item ${p.id===myId?'on':''}" data-sort="${p.id}">
+        <div class="ppl-row">
+          <div class="part-thumb" data-pphoto="${p.id}" title="사진 변경" style="${avatarStyle(p)}">${p.avatar?`<img src="${p.avatar}">`:(isNumberish(p.name)?silhouetteSVG():esc((p.name||'?').trim().charAt(0)))}</div>
+          <div class="ppl-body">
+            <div class="ppl-head">
+              <span class="node-name" data-rename="P:${p.id}">${esc(p.name)}<span class="pen">✎</span></span>
+              <span class="rsub">참여 대화 ${n}개</span>
+            </div>
+            ${p.id===myId ? '<div class="rsub"><span class="me-tag">이 기기의 나</span></div>' : ''}
+            <div class="field" style="margin:7px 0 0">
+              <label>번호·부제 (상대 이름 아래 회색 글씨)</label>
+              <input data-psub="${p.id}" value="${esc(p.sub||'')}" placeholder="예) 010-1234-5678">
+            </div>
+            <div class="ppl-btns">
+              ${p.id===myId ? '' : `<button class="btn btn-ghost btn-sm" data-pme="${p.id}">이 사람으로 보기</button>`}
+              <button class="btn btn-danger btn-sm" data-pdel="${p.id}">삭제</button>
+            </div>
+            ${alias === null ? '' : `<div class="ppl-alias">
+              <label>${esc(meP.name)} 폰에서 부를 이름</label>
+              <input data-alias="${p.id}" value="${esc(alias)}" placeholder="${esc(p.name)}">
+            </div>`}
+          </div>
+        </div>
+        ${editing ? nameEditorHtml('P:'+p.id, p.name, null) : ''}
+      </div>`;
+  });
+  return html;
+}
+
+/* ----- 등장인물 줄의 버튼 연결 (분류 칸의 테마 안에서 쓰인다) ----- */
+function bindPeopleSection(body){
+  const L = curList();
+  body.querySelectorAll('[data-pphoto]').forEach(el=> el.onclick = ()=>{
+    const p = personById(L, el.dataset.pphoto);
+    if(!p) return;
+    pickImage(FACE_PX, url=>{ p.avatar = url; spreadPerson(L, p); save(); renderAdminHome(); toast('사진이 설정되었습니다 (이 인물이 있는 모든 대화에 적용)'); }, true);
+  });
+  body.querySelectorAll('[data-psub]').forEach(inp=> inp.onchange = ()=>{
+    const p = personById(L, inp.dataset.psub);
+    if(!p) return;
+    p.sub = inp.value.trim(); spreadPerson(L, p); save(); toast('번호를 저장했습니다');
+  });
+  body.querySelectorAll('[data-pme]').forEach(b=> b.onclick = ()=>{
+    setMe(b.dataset.pme); save(); renderAdminHome();
+    toast('이 기기에서 볼 사람을 바꿨습니다');
+  });
+  body.querySelectorAll('[data-alias]').forEach(inp=> inp.onchange = ()=>{
+    const vid = meId();
+    if(!vid) return;
+    setAlias(L, vid, inp.dataset.alias, inp.value);
+    save(); renderAdminHome();
+    toast(inp.value.trim() ? '이 폰에서 부를 이름을 정했습니다' : '원래 이름으로 되돌렸습니다');
+  });
+  body.querySelectorAll('[data-pdel]').forEach(b=> b.onclick = ()=>{
+    const p = personById(L, b.dataset.pdel);
+    if(!p) return;
+    const n = threadsOfPerson(L, p.id).length;
+    confirmDialog('인물 “' + p.name + '” 을(를) 명단에서 지울까요?'
+      + (n ? '\n참여 중인 대화 ' + n + '개에서도 빠집니다. (대화와 메시지는 그대로 남습니다)' : ''), ()=>{
+      const k = normKey(p.name);
+      const wasMe = (meId() === p.id);
+      (L.threads||[]).forEach(t=>{
+        t.participants = (t.participants||[]).filter(x=>normKey(x.name) !== k);
+        if(t.per) delete t.per[p.id];
+        if(Array.isArray(t.only)) t.only = t.only.filter(x=>x !== p.id);
+      });
+      L.people = L.people.filter(x=>x.id !== p.id);
+      if(L.alias){
+        delete L.alias[p.id];
+        Object.keys(L.alias).forEach(v=>{ delete L.alias[v][p.id]; if(!Object.keys(L.alias[v]).length) delete L.alias[v]; });
+      }
+      if(wasMe){ delete viewAs[L.key]; saveView(); }
+      applyMeFlags();
+      save(); renderAdminHome(); toast('지웠습니다');
+    });
+  });
+}
+
+/* ----- 끌어서 순서 바꾸기 (마우스·터치 공용) ----- */
+function makeSortable(box, onDone){
+  if(!box) return;
+  box.classList.add('sortable');
+  let el = null, armed = false, dragging = false, startY = 0, timer = null;
+  const items = ()=> [].slice.call(box.querySelectorAll('[data-sort]'));
+  const stop = ()=>{
+    clearTimeout(timer);
+    if(el) el.classList.remove('dragging');
+    const did = dragging;
+    el = null; armed = false; dragging = false;
+    if(did) onDone(items().map(x=>x.dataset.sort));
+  };
+  box.addEventListener('pointerdown', e=>{
+    const t = e.target.closest('[data-sort]');
+    if(!t || e.target.closest('button, input, textarea, select, .node-name')) return;
+    el = t; startY = e.clientY; armed = false; dragging = false;
+    if(e.pointerType === 'mouse'){ armed = true; }
+    else { timer = setTimeout(()=>{ armed = true; el.classList.add('dragging'); }, 280); }
+  });
+  box.addEventListener('pointermove', e=>{
+    if(!el) return;
+    if(!armed){
+      if(Math.abs(e.clientY - startY) > 8){ clearTimeout(timer); el = null; }
+      return;
+    }
+    if(!dragging){
+      if(Math.abs(e.clientY - startY) < 4) return;
+      dragging = true;
+      el.classList.add('dragging');
+      try{ el.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    const y = e.clientY;
+    items().forEach(s=>{
+      if(s === el) return;
+      const r = s.getBoundingClientRect();
+      if(y > r.top && y < r.bottom){
+        const mid = r.top + r.height/2;
+        if(y < mid) box.insertBefore(el, s);
+        else box.insertBefore(el, s.nextSibling);
+      }
+    });
+  });
+  box.addEventListener('pointerup', stop);
+  box.addEventListener('pointercancel', stop);
+  box.addEventListener('touchmove', e=>{ if(dragging) e.preventDefault(); }, {passive:false});
+}
+
+/* ----- 분류 화면의 버튼 연결 ----- */
+function uniqueName(existing, base){
+  let n = base, i = 2;
+  while(existing.indexOf(n) !== -1){ n = base + ' ' + i; i++; }
+  return n;
+}
+function keysUnderC1(c1){
+  const out = [];
+  (c1.children||[]).forEach(c2=>(c2.lists||[]).forEach(k=>out.push(k)));
+  return out;
+}
+function deleteListByKey(key){
+  const L = listByKey(key);
+  if(!L) return;
+  const cur = data.lists[listIdx];
+  const i = data.lists.indexOf(L);
+  data.lists.splice(i, 1);
+  treeRemoveList(key);
+  const ni = data.lists.indexOf(cur);
+  listIdx = (ni >= 0) ? ni : Math.max(0, Math.min(i, data.lists.length - 1));
+}
+function reorderListsByTree(){
+  const cur = data.lists[listIdx];
+  const seen = {}, out = [];
+  data.tree.forEach(c1=>(c1.children||[]).forEach(c2=>(c2.lists||[]).forEach(k=>{
+    const L = listByKey(k);
+    if(L && !seen[normKey(L.key)]){ seen[normKey(L.key)] = 1; out.push(L); }
+  })));
+  data.lists.forEach(L=>{ if(!seen[normKey(L.key)]) out.push(L); });
+  data.lists = out;
+  const i = data.lists.indexOf(cur);
+  listIdx = (i >= 0) ? i : 0;
+}
+
+function bindTreeSection(body){
+  body.querySelectorAll('[data-fold]').forEach(h=>{
+    h.onclick = ()=>{ const k = h.dataset.fold; foldState[k] = !foldState[k]; renderAdminHome(); };
+  });
+  const up = $('#treeUp');
+  if(up) up.onclick = ()=>{
+    if(treePath.length <= treeMinDepth()) return;   /* 잠긴 지점 위로는 못 올라간다 */
+    treePath.pop(); editingNode = '';
+    adminListPicked = false; adminThreadId = '';   /* 상위 폴더로 가면 테마 선택을 푼다 */
+    renderAdminHome();
+  };
+  body.querySelectorAll('[data-enter]').forEach(b=> b.onclick = ()=>{
+    const wasC1 = !!curC1();
+    treePath.push(b.dataset.enter); editingNode = '';
+    adminThreadId = '';
+    const c1 = curC1(), c2 = curC2();
+    if(wasC1 && c1 && c2){
+      /* 테마 하나 = 문자 앱 한 벌. 열면 바로 그 내용을 편집한다 */
+      const L = listOfCat(c1, c2);
+      const i = data.lists.indexOf(L);
+      if(i >= 0) listIdx = i;
+      adminListPicked = true;
+      applyMeFlags();
+    } else {
+      adminListPicked = false;
+    }
+    save(); renderAdminHome();
+  });
+  body.querySelectorAll('[data-rename]').forEach(el=>{
+    const openEdit = ()=>{ editingNode = el.dataset.rename; renderAdminHome(); };
+    el.onclick = openEdit;          /* 한 번만 눌러도 열린다 (폰에서 두 번 누르기가 잘 안 먹는 문제) */
+    el.ondblclick = openEdit;
+  });
+
+  const nSave = $('#nodeSave');
+  if(nSave){
+    $('#nodeCancel').onclick = ()=>{ editingNode = ''; renderAdminHome(); };
+    /* 편집칸이 열리면 바로 입력할 수 있게 커서를 두고, 화면 가운데로 보여 준다 */
+    const nName = $('#nodeName');
+    if(nName){
+      nName.onkeydown = e=>{ if(e.key === 'Enter'){ e.preventDefault(); nSave.click(); } };
+      setTimeout(()=>{
+        try{
+          const item = nName.closest('.admin-list-item');
+          if(item) item.scrollIntoView({block:'center'});
+          nName.focus(); nName.select();
+        }catch(e){}
+      }, 30);
+    }
+    const auto = $('#nodeAuto');
+    if(auto) auto.onclick = ()=>{
+      const c1 = curC1(), c2 = curC2();
+      const label = $('#nodeName').value.trim() || '목록';
+      $('#nodeKey').value = makeListKey(c1?c1.name:'', c2?c2.name:'', label, listByKey(editingNode.slice(2)));
+    };
+    nSave.onclick = ()=>{
+      const nameVal = $('#nodeName').value.trim();
+      if(!nameVal){ toast('이름을 입력하세요'); return; }
+      if(editingNode.indexOf('c1:') === 0){
+        const node = data.tree.find(c=>c.id === editingNode.slice(3));
+        if(node) node.name = nameVal;
+      } else if(editingNode.indexOf('P:') === 0){
+        const L = curList();
+        const p = personById(L, editingNode.slice(2));
+        if(!p){ toast('인물을 찾지 못했습니다'); editingNode = ''; renderAdminHome(); return; }
+        if(normKey(p.name) === normKey(nameVal)){ editingNode = ''; renderAdminHome(); return; }   /* 그대로면 조용히 닫는다 */
+        const dup = personByName(L, nameVal);
+        if(dup && dup !== p){
+          /* 이미 있는 이름 — 합쳐지면 되돌릴 수 없으므로 먼저 물어본다 */
+          confirmDialog('이미 “' + dup.name + '” 인물이 있습니다.\n두 인물을 한 사람으로 합칠까요?\n(대화·메시지도 모두 “' + dup.name + '” 한 사람으로 모입니다)', ()=>{
+            renamePerson(L, p, nameVal);
+            editingNode = ''; save(); syncUrl(); renderAdminHome(); toast('한 사람으로 합쳤습니다');
+          }, '합치기');
+          return;
+        }
+        if(!renamePerson(L, p, nameVal)){ toast('이름을 바꾸지 못했습니다'); return; }
+      } else if(editingNode.indexOf('c2:') === 0){
+        const c1 = curC1();
+        const node = c1 && (c1.children||[]).find(c=>c.id === editingNode.slice(3));
+        if(node){
+          node.name = nameVal;
+          /* 테마 = 문자 앱 한 벌. 이름과 주소를 같이 맞춰 준다 */
+          const L = listsOfCat(node)[0];
+          const keyEl = $('#nodeKey');
+          if(L){
+            L.label = nameVal;
+            const oldKey = L.key;
+            const newKey = sanitizeKey(keyEl ? keyEl.value : '');
+            if(newKey && normKey(newKey) !== normKey(oldKey)){
+              if(data.lists.some(x=>x !== L && normKey(x.key) === normKey(newKey))){
+                toast('같은 주소용 이름이 이미 있습니다'); return;
+              }
+              L.key = newKey;
+              treeRenameListKey(oldKey, newKey);
+              if(viewAs[oldKey]){ viewAs[newKey] = viewAs[oldKey]; delete viewAs[oldKey]; saveView(); }
+              try{
+                if(savedListKey() && normKey(savedListKey()) === normKey(oldKey)) localStorage.setItem(LAST_KEY, newKey);
+              }catch(e){}
+            }
+          }
+        }
+      }
+      editingNode = ''; save(); syncUrl(); renderAdminHome(); toast('저장되었습니다');
+    };
+  }
+
+  const add = $('#treeAdd');
+  if(add) add.onclick = ()=>{
+    const c1 = curC1(), c2 = curC2();
+    if(!c1){
+      data.tree.push({ id:id(), name:uniqueName(data.tree.map(x=>x.name), '새 지점'), children:[] });
+    } else if(!c2){
+      const node = { id:id(), name:uniqueName(c1.children.map(x=>x.name), '새 테마'), lists:[] };
+      c1.children.push(node);
+      listOfCat(c1, node);            /* 테마마다 문자 앱 한 벌을 만들어 둔다 */
+    } else {
+      const L = listOfCat(c1, c2);
+      const list = peopleOf(L);                 /* 먼저 명단을 확정한 뒤에 넣는다 */
+      const nm = uniqueName(list.map(p=>p.name), '새 인물');
+      const np = { id:newPersonId(L, nm), name:nm, sub:'', avatar:'', silo:list.length % 2 };
+      list.push(np);
+      editingNode = 'P:' + np.id;      /* 만들자마자 이름을 바로 고칠 수 있게 연다 */
+    }
+    save(); renderAdminHome();
+  };
+
+  body.querySelectorAll('[data-cdel]').forEach(b=> b.onclick = ()=>{
+    const v = b.dataset.cdel;
+    const isC1 = (v.indexOf('c1:') === 0);
+    let node, keys, removeIt;
+    if(isC1){
+      const i = data.tree.findIndex(c=>c.id === v.slice(3));
+      if(i < 0) return;
+      node = data.tree[i]; keys = keysUnderC1(node);
+      removeIt = ()=> data.tree.splice(i, 1);
+    } else {
+      const c1 = curC1(); if(!c1) return;
+      const i = (c1.children||[]).findIndex(c=>c.id === v.slice(3));
+      if(i < 0) return;
+      node = c1.children[i]; keys = (node.lists||[]).slice();
+      removeIt = ()=> c1.children.splice(i, 1);
+    }
+    if(keys.length && keys.length >= data.lists.length){
+      toast('테마는 최소 1개 필요합니다. 다른 지점에 테마를 남겨두세요.');
+      return;
+    }
+    const openKey = curList() ? curList().key : '';
+    const doIt = ()=>{
+      if(keys.some(k=>normKey(k) === normKey(openKey))){ adminListPicked = false; adminThreadId = ''; }
+      keys.forEach(k=>deleteListByKey(k));
+      removeIt();
+      save(); renderAdminHome(); toast('삭제되었습니다');
+    };
+    const threads = keys.reduce((a,k)=>{ const L = listByKey(k); return a + (L ? L.threads.length : 0); }, 0);
+    if(threads) confirmDialog('“' + node.name + '” 안에 대화 ' + threads + '개가 있습니다.\n안의 내용까지 함께 삭제할까요?', doIt, '모두 삭제');
+    else confirmDialog('“' + node.name + '” 을(를) 삭제할까요?', doIt);
+  });
+
+  makeSortable($('#treeBox'), order=>{
+    const c1 = curC1(), c2 = curC2();
+    if(!c1){
+      data.tree = order.map(v=>data.tree.find(c=>c.id === v)).filter(Boolean);
+    } else if(!c2){
+      c1.children = order.map(v=>(c1.children||[]).find(c=>c.id === v)).filter(Boolean);
+      reorderListsByTree();
+    } else {
+      /* 테마 안에서는 등장인물 순서를 바꾼다 */
+      const L = listOfCat(c1, c2);
+      const map = {};
+      peopleOf(L).forEach(p=>{ map[p.id] = p; });
+      const out = order.map(v=>map[v]).filter(Boolean);
+      L.people.forEach(p=>{ if(out.indexOf(p) < 0) out.push(p); });
+      L.people = out;
+    }
+    save(); renderAdminHome(); toast('순서가 바뀌었습니다');
+  });
+  bindPeopleSection(body);
+}
+
+/* ----- 다른 대화 목록의 대화 불러오기 (분류를 따라 폴더처럼 이동) ----- */
+let impPath = [];   /* [] | [대분류id] | [대분류id, 중분류id] | [대분류id, 중분류id, 목록key] */
+function importThreadPanel(){
+  const c1 = impPath[0] ? data.tree.find(c=>c.id === impPath[0]) : null;
+  const c2 = (c1 && impPath[1]) ? (c1.children||[]).find(c=>c.id === impPath[1]) : null;
+  const L  = (c2 && impPath[2]) ? listByKey(impPath[2]) : null;
+  let rows = '';
+
+  if(!c1){
+    if(!data.tree.length) rows = '<div class="hint" style="margin:0">분류가 없습니다.</div>';
+    data.tree.forEach(node=>{
+      const cnt = countInCat1(node);
+      rows += `
+        <div class="admin-list-item">
+          <div class="top">
+            <div style="min-width:0"><div class="rname">${esc(node.name)}</div>
+              <div class="rsub">중분류 ${cnt.subs}개 · 목록 ${cnt.lists}개</div></div>
+            <button class="btn btn-ghost btn-sm" data-impgo="${node.id}">열기</button>
+          </div>
+        </div>`;
+    });
+  } else if(!c2){
+    if(!(c1.children||[]).length) rows = '<div class="hint" style="margin:0">중분류가 없습니다.</div>';
+    (c1.children||[]).forEach(node=>{
+      rows += `
+        <div class="admin-list-item">
+          <div class="top">
+            <div style="min-width:0"><div class="rname">${esc(node.name)}</div>
+              <div class="rsub">목록 ${(node.lists||[]).length}개</div></div>
+            <button class="btn btn-ghost btn-sm" data-impgo="${node.id}">열기</button>
+          </div>
+        </div>`;
+    });
+  } else if(!L){
+    const items = listsOfCat(c2).filter(x=>x !== curList());
+    if(!items.length) rows = '<div class="hint" style="margin:0">불러올 목록이 없습니다.</div>';
+    items.forEach(x=>{
+      rows += `
+        <div class="admin-list-item">
+          <div class="top">
+            <div style="min-width:0"><div class="rname">${esc(listLabel(x))}</div>
+              <div class="rsub">대화 ${x.threads.length}개</div></div>
+            <button class="btn btn-ghost btn-sm" data-impgo="${esc(x.key)}">열기</button>
+          </div>
+        </div>`;
+    });
+  } else {
+    if(!L.threads.length) rows = '<div class="hint" style="margin:0">이 목록에는 대화가 없습니다.</div>';
+    L.threads.forEach((t, ti)=>{
+      const last = t.messages[t.messages.length-1];
+      rows += `
+        <div class="admin-list-item">
+          <div class="top">
+            <div style="min-width:0">
+              <div class="rname">${esc(threadLabel(t))}</div>
+              <div class="rsub">참여자 ${(t.participants||[]).length}명 · 메시지 ${t.messages.length}개</div>
+              <div class="rsub">${esc(previewText(last) || '(내용 없음)')}</div>
+            </div>
+            <button class="btn btn-primary btn-sm" data-imp="${esc(L.key)}:${ti}">불러오기</button>
+          </div>
+        </div>`;
+    });
+  }
+
+  const crumb = [c1 && c1.name, c2 && c2.name, L && listLabel(L)].filter(Boolean).join(' › ') || '전체 분류';
+  return `
+    <div style="background:#f7f9fb;border:1px solid #e3e7ec;border-radius:10px;padding:10px;margin-bottom:10px">
+      <div class="hint" style="margin:0 0 8px">다른 대화 목록의 대화를 <b>상대 정보·메시지 그대로</b> 이 목록(<b>${esc(listLabel(curList()))}</b>)으로 복사합니다. 원본은 그대로 남습니다.</div>
+      <div class="crumb">
+        ${impPath.length ? '<button class="btn btn-ghost btn-sm" id="impUp">↑ 상위 폴더</button>' : ''}
+        <span class="crumb-txt">${esc(crumb)}</span>
+      </div>
+      ${rows}
+      <button class="btn btn-ghost btn-sm btn-block" id="importThreadClose">닫기</button>
+    </div>`;
+}
+
+/* ----- 대화 목록 칸 (PC 는 가운데 칸, 모바일은 사이드바) ----- */
+function threadListHtml(){
+  const L = curList();
+  let html = `
+    <div class="admin-section">
+      <h3>대화 목록 <span class="rsub">${esc(listLabel(L))}</span>
+        <span class="row-actions">
+          <button class="btn btn-yellow btn-sm" id="addThread">＋ 새 대화</button>
+          <button class="btn btn-ghost btn-sm" id="importThreadBtn">불러오기</button>
+        </span>
+      </h3>
+      ${importOpen ? importThreadPanel() : ''}
+      <div class="field" style="margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
+          <input type="checkbox" id="ed-autoSort" ${L.autoSort!==false?'checked':''} style="width:auto">
+          시간순 자동 정렬 (최신 대화가 위로)
+        </label>
+        <div class="hint" style="margin-top:4px">${L.autoSort!==false
+            ? '자동 정렬이 켜져 있어 아래 ▲▼ 순서는 지금 화면에 적용되지 않습니다. 직접 순서를 정하려면 위 체크를 끄세요.'
+            : '지금은 아래 ▲▼ 순서 그대로 보입니다.'}</div>
+      </div>
+      <div class="field" style="margin-bottom:10px">
+        <label>“오늘”로 볼 기준 날짜 (비우면 실제 오늘)</label>
+        <div class="row-actions">
+          <input id="ed-today" style="flex:1;min-width:120px" placeholder="20260504" value="${esc(L.today||'')}">
+          <button class="btn btn-ghost btn-sm" id="ed-todayClear" ${L.today?'':'disabled'}>비우기</button>
+        </div>
+        <div class="hint" style="margin-top:4px">지금 기준 <b>${esc(formatKoreanDate(`${refToday().y}-${String(refToday().m).padStart(2,'0')}-${String(refToday().d).padStart(2,'0')}`))}</b>${refToday().fixed?' (지정됨)':' (실제 오늘)'}</div>
+      </div>`;
+  if(!L.threads.length){
+    html += `<div class="hint">대화가 없습니다. 새 대화를 추가하세요.</div>`;
+  }
+  L.threads.forEach((th, idx)=>{
+    const onlyNames = (Array.isArray(th.only) && th.only.length)
+      ? th.only.map(pid=>{ const q = personById(L, pid); return q ? q.name : ''; }).filter(Boolean).join(', ')
+      : '';
+    html += `
+      <div class="admin-list-item ${th.id===adminThreadId?'on':''}">
+        <div class="top">
+          <div style="min-width:0">
+            <div class="rname">${esc(threadLabel(th))}${th.isGroup?'<span class="rsub" style="display:inline"> · 단체</span>':''}</div>
+            <div class="rsub">참여자 ${(th.participants||[]).length}명 · 메시지 ${th.messages.length}개</div>
+            <div class="rsub">목록 표시 시간 <b>${esc(listTimeLabel(th)||'-')}</b>${onlyNames?` · 보일 사람 <b>${esc(onlyNames)}</b>`:''}</div>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-ghost btn-sm" data-edit="${th.id}">편집</button>
+            <button class="btn btn-danger btn-sm" data-del="${th.id}">삭제</button>
+          </div>
+        </div>
+        <div class="row-actions" style="margin-top:8px">
+          <button class="btn btn-ghost btn-sm" data-up="${th.id}" ${idx===0?'disabled':''}>▲ 위로</button>
+          <button class="btn btn-ghost btn-sm" data-down="${th.id}" ${idx===L.threads.length-1?'disabled':''}>▼ 아래로</button>
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+function bindThreadListSection(scope){
+  const root = scope || $('#adminBody');
+  if(!root) return;
+  const as = $('#ed-autoSort');
+  if(as) as.onchange = e=>{ curList().autoSort = e.target.checked; save(); renderAdminHome(); };
+  const tdIn = $('#ed-today');
+  if(tdIn) tdIn.onchange = ()=>{
+    const parsed = parseDateInput(tdIn.value);
+    if(parsed === null){ toast('날짜를 알아볼 수 없습니다. 예: 20260504'); tdIn.value = curList().today || ''; return; }
+    curList().today = parsed; save(); renderAdminHome();
+  };
+  const tdc = $('#ed-todayClear');
+  if(tdc) tdc.onclick = ()=>{ curList().today = ''; save(); renderAdminHome(); };
+  const at = $('#addThread'); if(at) at.onclick = addThread;
+  const ib = $('#importThreadBtn');
+  if(ib) ib.onclick = ()=>{ importOpen = !importOpen; if(importOpen) impPath = []; renderAdminHome(); };
+  const irc = $('#importThreadClose'); if(irc) irc.onclick = ()=>{ importOpen = false; renderAdminHome(); };
+  const iup = $('#impUp'); if(iup) iup.onclick = ()=>{ impPath.pop(); renderAdminHome(); };
+  root.querySelectorAll('[data-impgo]').forEach(b=> b.onclick = ()=>{ impPath.push(b.dataset.impgo); renderAdminHome(); });
+  root.querySelectorAll('[data-imp]').forEach(b=> b.onclick = ()=>{
+    const raw = String(b.dataset.imp);
+    const cut = raw.lastIndexOf(':');
+    const srcList = listByKey(raw.slice(0, cut));
+    const src = srcList && srcList.threads[+raw.slice(cut+1)];
+    if(!src){ toast('원본 대화를 찾을 수 없습니다'); return; }
+    const copy = deepCopy(src);
+    copy.id = id();
+    (copy.participants||[]).forEach(p=> p.id = id());
+    (copy.messages||[]).forEach(m=> m.id = id());
+    curList().threads.push(copy);
+    save(); renderAdminHome();
+    toast(`“${threadLabel(copy)}” 대화를 불러왔습니다`);
+  });
+  root.querySelectorAll('[data-edit]').forEach(b=> b.onclick = ()=> editThread(b.dataset.edit));
+  root.querySelectorAll('[data-del]').forEach(b=> b.onclick = ()=> delThread(b.dataset.del));
+  root.querySelectorAll('[data-up]').forEach(b=> b.onclick = ()=> moveThread(b.dataset.up,-1));
+  root.querySelectorAll('[data-down]').forEach(b=> b.onclick = ()=> moveThread(b.dataset.down,1));
+}
+
+/* 2번째 칸: (PC) 대화 목록 + 고른 대화 편집 / (모바일) 고른 대화 편집만 */
+function renderPane2(){
+  const pane = $('#paneThread');
+  if(!pane) return;
+  const th = (adminListPicked && adminThreadId) ? findThread(adminThreadId) : null;
+  if(!th) adminThreadId = '';
+  const keep = pane.scrollTop;
+  if(!adminListPicked){
+    /* 상위 폴더를 보고 있는 중 — 어떤 테마도 고르지 않은 상태 */
+    pane.innerHTML = wideAdmin()
+      ? '<div class="pane-empty">왼쪽 <b>분류</b>에서 테마의 <b>열기</b>를 누르면<br>그 테마의 대화가 여기 표시됩니다.</div>'
+      : '';
+    const m0 = $('#paneMsgs'); if(m0) m0.innerHTML = '';
+    const ab0 = $('#adminBody'); if(ab0) ab0.classList.remove('thread-open');
+    return;
+  }
+  pane.innerHTML = (wideAdmin() ? threadListHtml() : '')
+    + (th ? threadEditorHtml(th) : (wideAdmin() ? '<div class="pane-empty">위 목록에서 대화의 <b>편집</b>을 누르세요.</div>' : ''));
+  pane.scrollTop = keep;
+  if(wideAdmin()) bindThreadListSection($('#adminBody'));
+  if(th){ bindThreadEditor(th, th.id); renderThreadMessages(th.id); }
+  else { const m = $('#paneMsgs'); if(m) m.innerHTML = ''; }
+  const ab = $('#adminBody');
+  if(ab) ab.classList.toggle('thread-open', !!th);
+}
+
+/* ----- 관리자 첫 화면 ----- */
+/* 기본은 보고 있던 위치 유지. resetScroll = true 일 때만 맨 위로 올린다 */
+function renderAdminHome(resetScroll){
+  enforceBranchLock();     /* 잠긴 지점 밖으로 나가지 않게 */
+  fixListForBranch();
+  syncUrl();
+  applyMeFlags();
+  $('#adminTitle').textContent = '관리자';
+  const L = curList();
+  const body = $('#paneHome');
+  let html = `
+    ${hasLocalEdits() ? `<div class="admin-section" style="background:#fff8d6;border:1px solid #f0dd8a">
+      <h3 style="color:#7a5b00">이 기기에만 저장된 수정이 있습니다</h3>
+      <div class="hint" style="margin-top:0;color:#7a5b00">지금 보이는 내용은 <b>이 기기에만</b> 저장되어 있고,
+        index.html 파일에는 아직 들어가지 않았습니다. 이 상태로 파일을 압축해 다른 폰에 옮기면 <b>예전 내용</b>이 나옵니다.<br>
+        아래 <b>“새 index.html 만들기”</b>를 눌러 파일을 만든 뒤 그 파일을 옮기세요.</div>
+      <button class="btn btn-yellow btn-block" id="exportHtmlTop">새 index.html 만들기</button>
+    </div>` : ''}
+    <div class="admin-section">
+      <h3>앱 / 데이터</h3>
+      <div class="field">
+        <label>앱 이름 (홈 화면에 표시될 이름)</label>
+        <input id="ed-appName" value="${esc(data.appName||'메시지')}">
+      </div>
+      <div class="row-actions" style="margin-bottom:10px">
+        <button class="btn btn-ghost btn-sm" id="saveAppName">이름 저장</button>
+        <button class="btn btn-primary btn-sm" id="installBtn">앱 설치</button>
+        <button class="btn btn-ghost btn-sm" id="diagBtn">설치 진단</button>
+      </div>
+      <div class="kv" id="diagOut" style="white-space:pre-wrap;user-select:text;-webkit-user-select:text;background:#f4f6f8;border-radius:8px;padding:8px;display:none"></div>
+      <div class="hint" style="margin-top:0">지금 설치되는 이름: <b id="nameNow">${esc(appNameOf())}</b><br>
+        이름을 바꾸면 <b>홈 화면 아이콘을 길게 눌러 삭제한 뒤 다시 설치</b>해야 새 이름이 적용됩니다.
+        (설치 시점의 이름이 아이콘에 그대로 굳습니다)</div>
+      <div class="kv">
+        지금 보이는 내용 <b>목록 ${data.lists.length}개 · 대화 ${data.lists.reduce((a,x)=>a+x.threads.length,0)}개 · 메시지 ${data.lists.reduce((a,x)=>a+x.threads.reduce((b,t)=>b+t.messages.length,0),0)}개</b><br>
+        코드 버전 <b>${esc(CODE_VERSION)}</b><br>
+        파일 버전 <b>${esc(DATA_VERSION)}</b> · 지문 <b>${esc(DATA_FP)}</b><br>
+        폰에 저장된 버전 <b>${esc((storedBox()||{}).version || '없음')}</b> · 지문 <b>${esc((storedBox()||{}).fp || '없음')}</b><br>
+        주소 <b>${esc(location.origin + location.pathname)}</b><br>
+        서비스워커 <b id="swState">${esc(swState)}</b><br>
+        설치 가능 <b id="canInstall">${deferredInstall ? '예 — 설치 버튼을 누르세요' : '아직 아님'}</b><br>
+        저장 방식 <b id="storeKind">${esc(storeKind)}</b> · 영구 저장 <b id="persistState">${esc(persistState)}</b><br>
+        지금 내용 <b>${storageKB()} KB</b> · 기기 저장 공간 <b id="quotaText">${esc(quotaText)}</b>
+      </div>
+      <button class="btn btn-primary btn-block" id="checkUpdate">새 파일 확인 (업데이트)</button>
+      <div class="kv" id="updInfo"></div>
+      <div class="hint">서버에 놓인 index.html 을 확인해, 내용이 다르면 캐시와 저장분을 지우고 새 파일로 다시 엽니다.
+        눌러도 “최신”이라고 나오면 폰이 아직 새 파일을 못 받은 것입니다 — 서버 앱의 폴더 위치를 확인하세요.</div>
+      <button class="btn btn-danger btn-block" id="resetFile">파일 원본으로 되돌리기</button>
+      <div class="hint">되돌리면 폰에서 수정한 내용이 사라지고, 설치된 파일에 들어있는 내용으로 돌아갑니다.</div>
+    </div>
+
+    <div class="admin-section">
+      <h3>${curC2() ? '등장인물' : '분류 (지점 › 테마)'}</h3>
+      <div class="crumb">
+        ${treePath.length > treeMinDepth() ? '<button class="btn btn-ghost btn-sm" id="treeUp">↑ 상위 폴더</button>' : ''}
+        ${breadcrumbHtml()}
+      </div>
+      ${branchLocked() ? `<div class="hint" style="margin-top:0">이 폰은 <b>${esc(lockedC1().name)}</b> 지점 전용입니다.
+        다른 지점은 볼 수 없습니다.</div>` : ''}
+      <div class="drag-hint">항목을 끌어 순서를 변경할 수 있습니다. (폰에서는 살짝 길게 누른 뒤 끌어주세요) · 이름을 두 번 누르면 고칠 수 있습니다.</div>
+      <div id="treeBox">${treeItemsHtml()}</div>
+      <button class="btn btn-yellow btn-block" id="treeAdd" style="margin-top:4px">＋ ${curC2() ? '새 인물' : (curC1() ? '새 테마' : '새 지점')}</button>
+      <div class="hint">${adminListPicked
+        ? `지금 편집 중: <b>${esc(listLabel(L))}</b> (${esc(listPathText(L))}) · 주소 <b>?list=${esc(L.key)}</b>`
+        : '테마의 <b>열기</b>를 누르면 그 테마의 등장인물과 대화를 편집할 수 있습니다.'}</div>
+    </div>
+
+    ${adminListPicked ? `
+    <div class="admin-section">
+      <h3>목록 상단 제목 <span class="rsub">${esc(listLabel(L))}</span></h3>
+      <div class="field">
+        <input id="ed-listTitle" value="${esc(L.title||'메시지')}">
+      </div>
+      <button class="btn btn-ghost btn-sm" id="saveListTitle">제목 저장</button>
+    </div>
+
+    <div class="admin-section ${foldState.pad?'folded':''}">
+      <h3 class="foldable" data-fold="pad">하단 여백 (기기 메뉴바 겹침 보정) <span class="fold-arrow">${foldState.pad?'▶':'▼'}</span></h3>
+      <div class="fold-body">
+        <div class="field">
+          <input id="ed-bottomPad" type="number" min="0" max="120" step="2" value="${effPad()}" placeholder="0">
+        </div>
+        <div class="hint" style="margin-top:0;margin-bottom:10px">휴대폰 하단 홈/뒤로가기 메뉴바에 입력창이나 목록 끝이 가려지면 여기 숫자(px)를 키우세요. 보통 24~48 정도.<br>
+          <b>이 기기에만 저장</b>되므로 내용을 업데이트해도 그대로 유지됩니다.
+          지금 ${devicePad()===null ? '<b>파일 기본값</b>을 쓰는 중' : '<b>이 기기 값</b>을 쓰는 중'}
+          · 파일 기본값 <b>${filePad()}</b></div>
+        <div class="row-actions">
+          <button class="btn btn-ghost btn-sm" id="saveBottomPad">이 기기에 저장</button>
+          <button class="btn btn-ghost btn-sm" id="clearBottomPad" ${devicePad()===null?'disabled':''}>기본값으로</button>
+          ${wideAdmin() ? '<button class="btn btn-ghost btn-sm" id="padToFile">파일 기본값으로도 저장</button>' : ''}
+        </div>
+      </div>
+    </div>` : ''}
+
+    ${(wideAdmin() || !adminListPicked) ? '' : threadListHtml()}
+    <div class="admin-section">
+      <h3>백업 / 복원</h3>
+      <div class="hint" style="margin-top:0;margin-bottom:10px">모든 대화 목록을 파일 하나로 내보내고, 다시 불러올 수 있습니다. 새 파일을 설치해 내용이 초기화된 뒤에도 이 파일로 되살릴 수 있습니다.</div>
+      <button class="btn btn-ghost btn-block" id="exportBtn">내보내기 (파일 저장)</button>
+      <button class="btn btn-ghost btn-block" id="importBtn">불러오기 (파일 열기)</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
+      <button class="btn btn-yellow btn-block" id="exportHtmlBtn">새 index.html 만들기</button>
+      <div class="hint">지금 내용을 그대로 담은 배포용 index.html 을 만듭니다. 이 파일로 폴더의 index.html 을 바꾸면, 다른 폰에 설치할 때 이 내용이 들어갑니다.</div>
+    </div>`;
+  const scroller = wideAdmin() ? body : $('#adminBody');
+  const prevScroll = resetScroll ? 0 : scroller.scrollTop;
+  body.innerHTML = html;
+  scroller.scrollTop = prevScroll;
+  /* 가운데 칸(대화 목록 + 고른 대화 편집)도 함께 갱신한다 */
+  renderPane2();
+
+  refreshAdminInfo();
+  $('#exportHtmlBtn').onclick = exportHtml;
+  const eht = $('#exportHtmlTop'); if(eht) eht.onclick = exportHtml;
+  $('#checkUpdate').onclick = ()=>{ toast('확인 중…'); checkForUpdate(true); };
+  $('#saveAppName').onclick = ()=>{
+    data.appName = $('#ed-appName').value.trim() || '메시지';
+    save(); applyAppIdentity();
+    const nn = $('#nameNow'); if(nn) nn.textContent = appNameOf();
+    if(location.protocol.indexOf('http') === 0){
+      toast('앱 이름 저장됨 · 적용을 위해 새로고침합니다');
+      setTimeout(()=> location.reload(), 900);
+    } else {
+      toast('앱 이름 저장됨');
+    }
+  };
+  $('#installBtn').onclick = installApp;
+  $('#diagBtn').onclick = runDiag;
+  $('#resetFile').onclick = ()=> confirmDialog('폰에서 수정한 내용을 모두 지우고 파일 원본으로 되돌릴까요?', ()=>{
+    data = normalize(deepCopy(EMBEDDED_DATA)); listIdx = 0; treePath = []; editingNode = '';
+    adminListPicked = false; adminThreadId = '';
+    baseFp = fingerprint(data);
+    save(); renderAdminHome(true); toast('파일 원본으로 되돌렸습니다');
+  });
+
+  bindTreeSection(body);
+
+  const slt = $('#saveListTitle');
+  if(slt) slt.onclick = ()=>{ curList().title = $('#ed-listTitle').value; save(); toast('저장됨'); renderAdminHome(); };
+  const sbp = $('#saveBottomPad');
+  if(sbp) sbp.onclick = ()=>{
+    setDevicePad(Math.max(0, Number($('#ed-bottomPad').value)||0));
+    applyBottomPad(); renderAdminHome(); toast('이 기기의 하단 여백을 저장했습니다');
+  };
+  const cbp = $('#clearBottomPad');
+  if(cbp) cbp.onclick = ()=>{ setDevicePad(null); applyBottomPad(); renderAdminHome(); toast('파일 기본값으로 되돌렸습니다'); };
+  const p2f = $('#padToFile');
+  if(p2f) p2f.onclick = ()=>{
+    const v = Math.max(0, Number($('#ed-bottomPad').value)||0);
+    data.lists.forEach(L2=>{ L2.bottomPad = v; });
+    save(); renderAdminHome(); toast('파일 기본값으로도 저장했습니다 (새 파일을 만들어 올려야 다른 폰에 적용됩니다)');
+  };
+  if(!wideAdmin() && adminListPicked) bindThreadListSection(body);
+  $('#exportBtn').onclick = exportData;
+  $('#importBtn').onclick = ()=> $('#importFile').click();
+  $('#importFile').onchange = importData;
+}
+
+/* 새 대화 — “이 기기의 나”와 상대 한 명으로 시작한다 */
+function addThread(){
+  const L = curList();
+  const ps = peopleOf(L);
+  const me = personById(L, effMeId()) || ps[0] || null;
+  let other = ps.find(p=>!me || p.id !== me.id) || null;
+  const mk = (nm, silo)=>{
+    let p = personByName(L, nm);
+    if(!p){ p = {id:newPersonId(L, nm), name:nm, sub:'', avatar:'', silo:silo}; L.people.push(p); }
+    return p;
+  };
+  const meP = me || mk('나', 0);
+  const otherP = other || mk('새 상대방', 1);
+  const th = { id:id(), isGroup:false, only:[], per:{},
+    participants:[
+      {id:id(), name:meP.name},
+      {id:id(), name:otherP.name}
+    ],
+    messages:[] };
+  L.threads.push(th); save(); applyMeFlags(); editThread(th.id);
+}
+function delThread(tid){
+  const th = findThread(tid);
+  confirmDialog(`“${th?threadLabel(th):''}” 대화를 삭제할까요?`, ()=>{
+    const L = curList();
+    L.threads = L.threads.filter(t=>t.id!==tid); save(); renderAdminHome(); toast('삭제되었습니다');
+  });
+}
+function moveThread(tid, dir){
+  const L = curList();
+  const i = L.threads.findIndex(t=>t.id===tid);
+  const j = i+dir;
+  if(j<0||j>=L.threads.length) return;
+  [L.threads[i], L.threads[j]] = [L.threads[j], L.threads[i]];
+  save(); renderAdminHome();
+}
+
+/* ----- 개별 대화 편집 ----- */
+/* PC(넓은 화면 + 마우스)에서는 사이드바·대화 편집·대화 내용 3단으로 나눠 보여준다 */
+let adminThreadId = '';
+function wideAdmin(){
+  try{ return window.matchMedia('(min-width:1000px) and (pointer:fine)').matches; }
+  catch(e){ return false; }
+}
+function clearThreadPanes(){
+  adminThreadId = '';
+  renderPane2();
+}
+function editThread(tid){
+  const th = findThread(tid);
+  if(!th) return renderAdminHome();
+  adminThreadId = tid;
+  renderPane2();
+}
+function renderThreadPanes(tid){
+  adminThreadId = tid;
+  renderPane2();
+}
+function threadEditorHtml(th){
+  $('#adminTitle').textContent = wideAdmin() ? '관리자' : '대화 편집';
+  const L = curList();
+  const rest = peopleOf(L).filter(p=> !inThread(th, p.name));
+  return `
+    <button class="btn btn-ghost btn-sm" id="backList" style="margin-bottom:14px">‹ 대화 목록으로</button>
+
+    <div class="admin-section">
+      <h3>기본 정보</h3>
+      <div class="field" style="margin-bottom:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
+          <input type="checkbox" id="rg" ${th.isGroup?'checked':''} style="width:auto"> 단체 문자 (3명 이상, 보낸 사람 이름 표시)
+        </label>
+      </div>
+      <div class="hint" style="margin-top:0">이 대화는 <b>참여자 모두의 폰</b>에 나타납니다.
+        상대 이름·번호·사진은 <b>등장인물</b>에 저장되며, 왼쪽 칸에서 고치면 모든 대화에 함께 반영됩니다.</div>
+    </div>
+
+    <div class="admin-section">
+      <h3>참여자</h3>
+      <div id="partList"></div>
+      <div class="field inline" style="margin-top:6px;display:flex;gap:8px;align-items:flex-end">
+        <div style="flex:1"><label>등장인물 넣기</label>
+          <select id="addPartSel" ${rest.length?'':'disabled'}>
+            ${rest.length ? rest.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('') : '<option>넣을 인물이 없습니다</option>'}
+          </select></div>
+        <button class="btn btn-yellow" id="addPart" ${rest.length?'':'disabled'}>넣기</button>
+      </div>
+      <div class="field inline" style="margin-top:6px;display:flex;gap:8px;align-items:flex-end">
+        <div style="flex:1"><label>새 인물 만들어 넣기</label><input id="newPart" placeholder="예: 이서준"></div>
+        <button class="btn btn-ghost" id="addPartNew">만들기</button>
+      </div>
+      <div class="hint">참여자로 넣은 사람의 폰에 이 대화가 보입니다.
+        말풍선은 <b>보는 사람 기준</b>으로 좌우가 자동으로 나뉩니다.</div>
+    </div>
+
+    <div class="admin-section">
+      <h3>이 대화를 볼 사람</h3>
+      <div class="field" style="margin-bottom:6px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
+          <input type="checkbox" id="onlyAll" ${(!th.only || !th.only.length)?'checked':''} style="width:auto">
+          <b>참여자 모두의 폰</b>에 보이기 (기본)
+        </label>
+      </div>
+      <div id="onlyBox" style="${(!th.only || !th.only.length)?'display:none':''}">
+        ${(th.participants||[]).map(p=>{
+          const per = personByName(L, p.name);
+          const on = per && Array.isArray(th.only) && th.only.indexOf(per.id) >= 0;
+          return `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;padding:3px 0">
+            <input type="checkbox" data-only="${per?per.id:''}" ${on?'checked':''} style="width:auto"> ${esc(p.name)}</label>`;
+        }).join('')}
+      </div>
+      <div class="hint" style="margin-top:6px">한 사람의 폰에만 보여주고 싶을 때 위 체크를 끄고 그 사람만 고르세요.</div>
+    </div>`;
+}
+
+/* 대화 편집 칸의 버튼 연결 */
+function bindThreadEditor(th, tid){
+  const L = curList();
+  const back = $('#backList');
+  if(back) back.onclick = ()=>{ save(); adminThreadId = ''; renderPane2(); renderAdminHome(true); };
+  $('#rg').onchange = e=>{ th.isGroup = e.target.checked; save(); editThread(tid); };
+
+  /* 이 대화를 볼 사람 */
+  const onlyAll = $('#onlyAll');
+  if(onlyAll) onlyAll.onchange = ()=>{
+    if(onlyAll.checked){ th.only = []; }
+    else {
+      th.only = (th.participants||[]).map(p=>{ const q = personByName(L, p.name); return q ? q.id : ''; }).filter(Boolean);
+    }
+    save(); editThread(tid);
+  };
+  document.querySelectorAll('#onlyBox [data-only]').forEach(cb=> cb.onchange = ()=>{
+    const pid = cb.dataset.only; if(!pid) return;
+    if(!Array.isArray(th.only)) th.only = [];
+    if(cb.checked){ if(th.only.indexOf(pid) < 0) th.only.push(pid); }
+    else th.only = th.only.filter(x=>x !== pid);
+    save();
+  });
+
+  const addSel = $('#addPartSel');
+  $('#addPart').onclick = ()=>{
+    const p = addSel ? personById(L, addSel.value) : null;
+    if(!p || inThread(th, p.name)) return;
+    th.participants.push({id:id(), name:p.name});   /* 사진은 인물 명단에만 둔다 */
+    th.isGroup = th.participants.length > 2;
+    save(); editThread(tid);
+  };
+  $('#addPartNew').onclick = ()=>{
+    const v = ($('#newPart').value||'').trim(); if(!v) return;
+    let p = personByName(L, v);
+    if(!p){ const list = peopleOf(L); p = {id:newPersonId(L, v), name:v, sub:'', avatar:'', silo:list.length%2}; list.push(p); }
+    if(inThread(th, p.name)){ toast('이미 참여자에 있습니다'); return; }
+    th.participants.push({id:id(), name:p.name});   /* 사진은 인물 명단에만 둔다 */
+    th.isGroup = th.participants.length > 2;
+    save(); editThread(tid);
+  };
+  renderParticipants(th, tid);
+}
+
+/* 편집 화면에서 오른쪽(파란 말풍선)에 놓을 사람 —
+   이 기기에서 고른 “나”가 이 대화에 있으면 그 사람, 아니면 참여자 맨 위 사람 */
+function editorMe(th){
+  const me = personById(curList(), effMeId());
+  if(me && inThread(th, me.name)) return me.name;
+  return ((th.participants||[])[0] || {}).name || '';
+}
+function otherPartsOf(th){
+  const me = normKey(editorMe(th));
+  return (th.participants||[]).filter(p=>normKey(p.name) !== me);
+}
+function lastOtherName(th){
+  const me = normKey(editorMe(th));
+  for(let i=th.messages.length-1; i>=0; i--){
+    const n = th.messages[i].senderName;
+    if(n && normKey(n) !== me && partOf(th, n)) return n;
+  }
+  const os = otherPartsOf(th);
+  return os[0] ? os[0].name : '';
+}
+/* 3번째 칸: 대화 내용 */
+function renderThreadMessages(tid){
+  const th = findThread(tid);
+  if(!th){ const m = $('#paneMsgs'); if(m) m.innerHTML = ''; return; }
+  const others = otherPartsOf(th);
+  const meName = editorMe(th) || '나';
+  const lastOther = lastOtherName(th);
+  $('#paneMsgs').innerHTML = `
+    <div class="admin-section">
+      <h3>대화 내용 <span class="rsub">${esc(threadLabel(th))}</span></h3>
+      <div class="hint" style="margin-top:0">시간은 <b>1450</b> → 오후 2:50, <b>930</b> → 오전 9:30 처럼 숫자만 넣으면 됩니다.<br>
+        날짜는 <b>20260504</b> → 2026-05-04 로 바뀌며, <b>바뀌는 날의 첫 메시지</b>에만 넣으면 그 자리에 회색 날짜 구분선이 뜹니다.</div>
+      <div id="msgList"></div>
+      <div class="add-row">
+        <div class="left" style="display:flex;gap:6px;align-items:center;flex:1;min-width:0">
+          ${others.length > 1
+            ? `<select id="addWho" style="flex:0 1 160px;min-width:0">${others.map(p=>`<option ${p.name===lastOther?'selected':''}>${esc(p.name)}</option>`).join('')}</select>`
+            : ''}
+          <button class="btn btn-ghost" id="addMsgOther">＋ ${others.length>1 ? '상대 메시지' : esc(lastOther || '상대방')}</button>
+        </div>
+        <button class="btn btn-primary right" id="addMsgMine">＋ ${esc(meName)}</button>
+      </div>
+    </div>`;
+  const addMsgBy = who=>{
+    const lastMsg = th.messages[th.messages.length-1];
+    th.messages.push({id:id(), senderName:who, text:'', image:'',
+      time:(lastMsg?lastMsg.time:''), date:'', status:''});
+    save(); renderThreadMessages(tid); renderPane2();
+    const last = $('#msgList') ? $('#msgList').lastElementChild : null;
+    if(last) last.scrollIntoView({block:'center'});
+  };
+  const ao = $('#addMsgOther');
+  if(ao) ao.onclick = ()=>{
+    const sel = $('#addWho');
+    addMsgBy(sel ? sel.value : (lastOther || (others[0]||{}).name || ''));
+  };
+  const am = $('#addMsgMine');
+  if(am) am.onclick = ()=> addMsgBy(meName);
+  renderMsgEditors(th, tid);
+}
+
+/* 참여자 줄 — 이름·사진은 인물에 저장되고, 안읽음·고정은 사람마다 따로 */
+function renderParticipants(th, tid){
+  const L = curList();
+  const box = $('#partList'); box.innerHTML = '';
+  (th.participants||[]).forEach(p=>{
+    const person = personByName(L, p.name);
+    const pid = person ? person.id : '';
+    const pv = perOf(th, pid);
+    const manual = (typeof pv.unread === 'number' && pv.unread >= 0);
+    const face = faceOf(p);
+    const row = document.createElement('div');
+    row.className = 'part-row';
+    row.innerHTML = `
+      <div class="part-thumb" title="사진 변경" style="${avatarStyle(p)}">${avatarInner(p)}</div>
+      <div class="part-info">
+        <div class="part-name">
+          <input class="part-name-input" data-a="name" value="${esc(p.name)}" placeholder="이름">
+          ${pid && pid===meId() ? '<span class="me-tag">이 기기의 나</span>' : ''}
+        </div>
+        <div class="part-actions">
+          <button class="btn btn-ghost btn-sm" data-a="photo">${face.avatar?'사진 변경':'＋ 사진'}</button>
+          ${face.avatar?'<button class="btn btn-ghost btn-sm" data-a="photoDel">사진 제거</button>':'<button class="btn btn-ghost btn-sm" data-a="silo">실루엣 색</button>'}
+          <button class="btn btn-danger btn-sm" data-a="del">빼기</button>
+        </div>
+        <div class="part-actions" style="border-top:1px dashed #e3e7ec;margin-top:6px;padding-top:6px">
+          <span class="rsub" style="flex-basis:100%">${esc(p.name)} 님의 폰에서 이 대화는</span>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px">
+            <input type="checkbox" data-a="uman" ${manual?'checked':''} style="width:auto"> 안읽음 직접</label>
+          <input type="number" min="0" data-a="unum" style="width:70px;padding:5px 8px"
+                 value="${manual ? pv.unread : autoUnreadFor(th, pid)}" ${manual?'':'disabled'}>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px">
+            <input type="checkbox" data-a="pin" ${pv.pinned?'checked':''} style="width:auto"> 📌고정</label>
+        </div>
+      </div>`;
+
+    const nameInput = row.querySelector('[data-a="name"]');
+    nameInput.onchange = ()=>{
+      const v = nameInput.value.trim();
+      if(!v || !person){ nameInput.value = p.name; return; }
+      if(normKey(v) === normKey(person.name)){ nameInput.value = person.name; return; }
+      const dup = personByName(L, v);
+      if(dup && dup !== person){
+        nameInput.value = person.name;
+        confirmDialog('이미 “' + dup.name + '” 인물이 있습니다.\n두 인물을 한 사람으로 합칠까요?', ()=>{
+          renamePerson(L, person, v); save(); editThread(tid); renderAdminHome(); toast('한 사람으로 합쳤습니다');
+        }, '합치기');
+        return;
+      }
+      if(renamePerson(L, person, v)){ save(); editThread(tid); renderAdminHome(); }
+      else nameInput.value = p.name;
+    };
+
+    const setPhoto = url=>{
+      const per = person || personByName(L, p.name);
+      if(per){ per.avatar = url; spreadPerson(L, per); }
+      save(); renderParticipants(th, tid); renderMsgEditors(th, tid);
+    };
+    const pickPhoto = ()=> pickImage(FACE_PX, url=>{ setPhoto(url); toast('사진이 설정되었습니다 (이 인물이 있는 모든 대화에 적용)'); }, true);
+    row.querySelector('.part-thumb').onclick = pickPhoto;
+    row.querySelector('[data-a="photo"]').onclick = pickPhoto;
+    const delPhoto = row.querySelector('[data-a="photoDel"]');
+    if(delPhoto) delPhoto.onclick = ()=> setPhoto('');
+    const siloBtn = row.querySelector('[data-a="silo"]');
+    if(siloBtn) siloBtn.onclick = ()=>{
+      const per = person || personByName(L, p.name);
+      if(per){ per.silo = (per.silo===1)?0:1; spreadPerson(L, per); }
+      save(); renderParticipants(th, tid); renderMsgEditors(th, tid);
+    };
+
+    /* 사람마다 따로 : 안읽음 · 고정 */
+    const uMan = row.querySelector('[data-a="uman"]');
+    const uNum = row.querySelector('[data-a="unum"]');
+    uMan.onchange = ()=>{
+      if(uMan.checked){ perSet(th, pid, 'unread', Math.max(0, Number(uNum.value)||0)); uNum.disabled = false; }
+      else { perSet(th, pid, 'unread', null); uNum.disabled = true; uNum.value = autoUnreadFor(th, pid); }
+      save();
+    };
+    uNum.oninput = ()=>{ if(uMan.checked){ perSet(th, pid, 'unread', Math.max(0, Number(uNum.value)||0)); save(); } };
+    row.querySelector('[data-a="pin"]').onchange = e=>{ perSet(th, pid, 'pinned', e.target.checked); save(); };
+
+    row.querySelector('[data-a="del"]').onclick = ()=>{
+      if((th.participants||[]).length <= 1){ toast('최소 1명은 필요합니다'); return; }
+      th.participants = th.participants.filter(x=>x.id!==p.id);
+      if(pid && th.per) delete th.per[pid];
+      if(Array.isArray(th.only)) th.only = th.only.filter(x=>x !== pid);
+      th.isGroup = th.participants.length > 2;
+      save(); editThread(tid);
+    };
+    box.appendChild(row);
+  });
+}
+
+function renderMsgEditors(th, tid){
+  const box = $('#msgList'); box.innerHTML = '';
+  if(!th.messages.length){
+    const em = document.createElement('div');
+    em.className = 'hint';
+    em.style.margin = '0 0 4px';
+    em.textContent = '메시지가 없습니다. 아래 ＋ 버튼으로 추가하세요.';
+    box.appendChild(em);
+  }
+
+  const meName = editorMe(th);
+  const opts = (th.participants||[]).map(p=>p.name);
+  th.messages.forEach((msg, i)=>{
+    const ed = document.createElement('div');
+    const mine = normKey(msg.senderName) === normKey(meName);
+    ed.className = 'msg-editor' + (mine ? ' mine' : '');
+    ed.innerHTML = `
+      <div class="who">${esc(msg.senderName || '(이름 없음)')}${mine ? ' · 나' : ''}</div>
+      <div class="er1">
+        <select class="who-sel" data-f="who" style="width:auto;flex:0 1 140px">
+          ${opts.map(n=>`<option ${normKey(n)===normKey(msg.senderName)?'selected':''}>${esc(n)}</option>`).join('')}
+        </select>
+        <input data-f="time" style="flex:1;min-width:0" placeholder="1450" value="${esc(msg.time||'')}">
+      </div>
+      <div class="er1">
+        <input data-f="date" style="flex:1;min-width:0" placeholder="20260504 (날짜가 바뀔 때만)" value="${esc(msg.date||'')}">
+        <button class="btn btn-ghost btn-sm" data-a="dateClear" ${msg.date?'':'disabled'}>날짜 지움</button>
+      </div>
+      <div class="stamp" data-f="stamp">${msg.date?esc(formatKoreanDate(msg.date)):''}</div>
+      <textarea data-f="text" placeholder="메시지 내용">${esc(msg.text||'')}</textarea>
+      <div class="er2">
+        ${msg.image?`<div class="msg-thumb"><img src="${msg.image}"></div>`:''}
+        <button class="btn btn-ghost btn-sm" data-a="img">${msg.image?'사진 변경':'사진 첨부'}</button>
+        ${msg.image?`<button class="btn btn-danger btn-sm" data-a="imgClear">사진 제거</button>`:''}
+      </div>
+      ${mine ? `<div class="er2" style="margin-top:8px">
+        <label>상태표시</label>
+        <input type="text" data-f="status" placeholder="예) 읽음 / 전송됨 (비우면 없음)" value="${esc(msg.status||'')}">
+      </div>` : ''}
+      <div class="er3">
+        <span class="spacer"></span>
+        <button class="btn btn-ghost btn-sm" data-up="${i}" ${i===0?'disabled':''}>▲</button>
+        <button class="btn btn-ghost btn-sm" data-down="${i}" ${i===th.messages.length-1?'disabled':''}>▼</button>
+        <button class="btn btn-danger btn-sm" data-del="${i}">삭제</button>
+      </div>`;
+
+    /* 보낸 사람이 바뀌면 좌·우 위치도 바로 따라가도록 다시 그린다 */
+    ed.querySelector('[data-f="who"]').onchange = e=>{
+      msg.senderName = e.target.value;
+      if(normKey(msg.senderName) !== normKey(editorMe(th))) msg.status = '';
+      save(); renderMsgEditors(th, tid);
+    };
+
+    const timeInput = ed.querySelector('[data-f="time"]');
+    const applyTime = ()=>{
+      const parsed = parseTimeInput(timeInput.value);
+      if(parsed === null){ toast('시간을 알아볼 수 없습니다. 예: 1450, 930, 오후 2:50'); timeInput.value = msg.time||''; return; }
+      msg.time = parsed; timeInput.value = parsed; save();
+    };
+    timeInput.onchange = applyTime;
+    timeInput.onblur = applyTime;
+
+    const dateInput = ed.querySelector('[data-f="date"]');
+    const stamp = ed.querySelector('[data-f="stamp"]');
+    const applyDate = ()=>{
+      const parsed = parseDateInput(dateInput.value);
+      if(parsed === null){ toast('날짜를 알아볼 수 없습니다. 예: 20260504, 2026-05-04'); dateInput.value = msg.date||''; return; }
+      msg.date = parsed; dateInput.value = parsed;
+      stamp.textContent = parsed ? formatKoreanDate(parsed) : '';
+      save(); renderMsgEditors(th, tid);
+    };
+    dateInput.onchange = applyDate;
+    ed.querySelector('[data-a="dateClear"]').onclick = ()=>{ msg.date=''; save(); renderMsgEditors(th, tid); };
+
+    ed.querySelector('[data-f="text"]').oninput = e=>{ msg.text = e.target.value; save(); };
+
+    ed.querySelector('[data-a="img"]').onclick = ()=> pickImage(PHOTO_W, url=>{
+      msg.image = url; if(save()) toast('사진이 첨부되었습니다'); renderMsgEditors(th, tid);
+    });
+    const imgClear = ed.querySelector('[data-a="imgClear"]');
+    if(imgClear) imgClear.onclick = ()=>{ msg.image=''; save(); renderMsgEditors(th, tid); };
+
+    const statusEl = ed.querySelector('[data-f="status"]');
+    if(statusEl) statusEl.oninput = e=>{ msg.status = e.target.value; save(); };
+
+    ed.querySelector('[data-del]').onclick = ()=>{ th.messages.splice(i,1); save(); renderMsgEditors(th, tid); };
+    ed.querySelector('[data-up]').onclick = ()=>{ if(i>0){ [th.messages[i-1],th.messages[i]]=[th.messages[i],th.messages[i-1]]; save(); renderMsgEditors(th, tid);} };
+    ed.querySelector('[data-down]').onclick = ()=>{ if(i<th.messages.length-1){ [th.messages[i+1],th.messages[i]]=[th.messages[i],th.messages[i+1]]; save(); renderMsgEditors(th, tid);} };
+    box.appendChild(ed);
+  });
+}
+
+/* ----- 이미지 선택 (캔버스 축소·압축) -----
+   square=true 면 정사각형으로 잘라 축소(프로필용), 아니면 비율 유지 */
+/* ---------- 사진 크기·화질 ----------
+   눈에 띄게 뭉개지지 않는 선에서 조금 낮춰, 파일과 저장 공간을 아낀다. */
+const PHOTO_W = 720;   /* 대화 속 사진 가로 최대 */
+const PHOTO_Q = 0.72;  /* 대화 속 사진 화질 */
+const FACE_PX = 180;   /* 프로필 사진 한 변 */
+const FACE_Q  = 0.76;  /* 프로필 사진 화질 */
+
+function pickImage(size, cb, square){
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        if(square){
+          canvas.width = size; canvas.height = size;
+          const side = Math.min(img.width, img.height);
+          const sx = (img.width - side)/2, sy = (img.height - side)/2;
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+        } else {
+          let w=img.width, h=img.height;
+          if(w > size){ h = Math.round(h*size/w); w = size; }
+          canvas.width=w; canvas.height=h;
+          ctx.drawImage(img, 0, 0, w, h);
+        }
+        cb(canvas.toDataURL('image/jpeg', square ? FACE_Q : PHOTO_Q));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(f);
+  };
+  inp.click();
+}
+
+/* ----- 백업 / 복원 ----- */
+function downloadFile(name, text, mime){
+  const blob = new Blob([text], {type: mime || 'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+}
+function newVersion(){
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+/* 서버 없이(파일을 직접 열었을 때도) 자기 자신의 소스를 만들어 낸다.
+   화면에 그려둔 내용은 열 때마다 다시 그리므로 비워서 내보낸다. */
+function selfHtml(){
+  const root = document.documentElement.cloneNode(true);
+  /* 관리자 3단 칸은 칸 자체(#paneHome/#paneThread/#paneMsgs)를 남기고 안쪽만 비운다 */
+  ['#threadList','#messages','#paneHome','#paneThread','#paneMsgs','#branchList'].forEach(sel=>{
+    const el = root.querySelector(sel); if(el) el.innerHTML = '';
+  });
+  const off = (sel, cls)=>{ const el = root.querySelector(sel); if(el) el.classList.remove(cls); };
+  off('#adminBody','thread-open');
+  off('#adminOverlay','active'); off('#roomScreen','active'); off('#pickBranch','show');
+  off('#photoViewer','show'); off('#modePill','show'); off('#confirmBox','show'); off('#toast','show');
+  const ls = root.querySelector('#listScreen'); if(ls) ls.removeAttribute('style');
+  const ab = root.querySelector('#btnAdmin'); if(ab) ab.removeAttribute('style');
+  const pi = root.querySelector('#photoViewerImg'); if(pi) pi.removeAttribute('src');
+  const ts = root.querySelector('#toast'); if(ts) ts.textContent = '';
+  const tc = root.querySelector('#themeColor'); if(tc) tc.setAttribute('content', THEME_LIST);
+  return '<!DOCTYPE html>\n' + root.outerHTML + '\n';
+}
+/* 지금 내용을 담은 새 index.html 을 만든다 (데이터 구간만 교체) */
+function buildHtmlFrom(tpl){
+  const i = tpl.indexOf(MARK_S), j = tpl.indexOf(MARK_E);
+  if(i < 0 || j <= i) return null;
+  const ver = newVersion();
+  const json = JSON.stringify(data, null, 1).replace(/<\//g, '<\\/');
+  const block = MARK_S + ' 아래 두 줄이 이 파일에 들어있는 대화 내용입니다. */\n'
+    + 'const DATA_VERSION = ' + JSON.stringify(ver) + ';\n'
+    + 'const EMBEDDED_DATA = ' + json + ';\n';
+  return { html: tpl.slice(0,i) + block + tpl.slice(j), version: ver };
+}
+function finishExportHtml(built){
+  if(!built){ toast('파일을 만들 수 없습니다'); return; }
+  downloadFile('index.html', built.html, 'text/html;charset=utf-8');
+  baseFp = fingerprint(data);
+  save();
+  toast('새 index.html 저장됨 · 버전 ' + built.version);
+  if($('#adminOverlay').classList.contains('active')) renderAdminHome();
+}
+function exportHtml(){
+  if(location.protocol.indexOf('http') !== 0){
+    /* 파일로 직접 열었을 때는 “지금 열려 있는 화면의 코드”가 그대로 저장된다.
+       기능이 추가된 파일을 새로 받은 뒤 새로고침 없이 내보내면 예전 코드로 되돌아가므로 한 번 확인한다. */
+    confirmDialog(
+      '지금 화면에 열려 있는 상태로 파일을 만듭니다.\n기능이 바뀐 파일을 새로 받았다면 먼저 새로고침(F5) 후에 만들어 주세요.',
+      ()=> finishExportHtml(buildHtmlFrom(selfHtml())),
+      '만들기'
+    );
+    return;
+  }
+  fetch('./index.html?_ex=' + Date.now(), {cache:'no-store'})
+    .then(r=> r.ok ? r.text() : Promise.reject())
+    .then(tpl=> finishExportHtml(buildHtmlFrom(tpl)))
+    .catch(()=> finishExportHtml(buildHtmlFrom(selfHtml())));
+}
+function exportData(){
+  const payload = { app:'단서메시지', version:DATA_VERSION, exportedAt:new Date().toISOString(), data:data };
+  downloadFile('단서메시지_백업.json', JSON.stringify(payload,null,2), 'application/json');
+  toast('백업 파일을 저장했습니다');
+}
+function importData(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try {
+      const parsed = JSON.parse(reader.result);
+      const body = (parsed && parsed.data) ? parsed.data : parsed;
+      if(!body || (!body.lists && !body.threads)) throw new Error('bad');
+      data = normalize(body);
+      listIdx = 0; treePath = []; editingNode = ''; adminThreadId = '';
+      applyMeFlags();
+      if(!baseFp) baseFp = fingerprint(normalize(deepCopy(EMBEDDED_DATA)));
+      save();               /* 현재 파일 버전으로 도장을 다시 찍어 저장 */
+      toast('불러왔습니다');
+      renderAdminHome(true);
+    } catch(err){ toast('올바른 백업 파일이 아닙니다'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* ---------- 이벤트 연결 ---------- */
+$('#btnBack').onclick = goBack;
+/* 관리자 상태에서만 동작. 손님 모드에서는 장식용(검색 아이콘과 같음) */
+$('#btnAdmin').onclick = ()=>{ if(isAdmin) openAdmin(); };
+$('#adminClose').onclick = goBack;
+$('#adminGuest').onclick = guestMode;
+$('#photoClose').onclick = goBack;
+$('#photoViewer').onclick = e=>{ if(e.target.id === 'photoViewer') goBack(); };
+
+/* 안드로이드 뒤로가기: 앱 종료 대신 이전 화면으로 */
+window.addEventListener('popstate', closeTop);
+
+/* 전체화면 토글 (오프라인 로컬 실행 시 주소창 없이 보기)
+   손님 모드에서는 동작하지 않는다 — 관리자일 때만 쓰는 기능 */
+function toggleFullscreen(){
+  const el = document.documentElement;
+  if(!document.fullscreenElement){
+    (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+  }
+}
+$('#btnFull').onclick = ()=>{ if(isAdmin) toggleFullscreen(); };
+
+/* 제목 길게 눌러 관리자 진입 */
+let pressTimer = null;
+const listTitleEl = $('#listTitle');
+function startPress(){ pressTimer = setTimeout(()=>{ openAdmin(); }, 5000); }
+function cancelPress(){ clearTimeout(pressTimer); }
+listTitleEl.addEventListener('mousedown', startPress);
+listTitleEl.addEventListener('touchstart', startPress, {passive:true});
+['mouseup','mouseleave','touchend','touchcancel'].forEach(ev=> listTitleEl.addEventListener(ev, cancelPress));
+
+/* ---------- 시작 ---------- */
+/* 첫 화면 정하기
+   - PC(넓은 화면)  : 편집용이므로 관리자 화면. 지점 잠금 없음.
+   - 폰 · 처음      : 지점 고르기 → 그 지점 안에서 테마·인물 고르기
+   - 폰 · 설정 끝난 뒤 : 손님 화면 */
+let bootTries = 0;
+function decideStartScreen(){
+  if(!data) return;
+  if(!window.innerWidth && bootTries < 20){ bootTries++; setTimeout(decideStartScreen, 200); return; }
+  if(wideAdmin()){
+    if(!isAdmin){ isAdmin = true; renderList(); openAdmin(!meId()); }
+    return;
+  }
+  if(!lockedC1() && (data.tree||[]).length){ renderBranchPicker(); return; }
+  fixListForBranch();
+  if(!meId()){ isAdmin = true; renderList(); openAdmin(true); return; }
+  renderList();
+}
+
+(function boot(){
+  /* 주소 끝에 ?reset=1 을 붙여 열면 폰에 저장된 내용과 캐시를 전부 지우고 파일 내용으로 시작한다 */
+  let first = Promise.resolve();
+  if(/[?&]reset=1/.test(location.search)){
+    try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(LAST_KEY); localStorage.removeItem(VIEW_KEY); localStorage.removeItem(PAD_KEY); localStorage.removeItem(BRANCH_KEY); LEGACY_KEYS.forEach(k=>localStorage.removeItem(k)); }catch(e){}
+    try{ first = idbClear(); }catch(e){}
+    try{ if(window.caches && caches.keys) caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))); }catch(e){}
+    try{
+      if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+        navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister()));
+      }
+    }catch(e){}
+  }
+  loadView();
+  loadBranch();
+  first.catch(()=>{}).then(load).then(d=>{
+    data = d;
+    /* 한 단계가 실패해도 앱은 뜨게 한다. 실패한 단계는 기록해 화면에 보여준다. */
+    step('selectListFromUrl', selectListFromUrl);
+    step('applyMeFlags', applyMeFlags);
+    step('save', save);
+    step('syncUrl', syncUrl);
+    step('renderList', renderList);
+    try{ askPersist().then(refreshQuota).then(()=>{ try{ refreshAdminInfo(); }catch(e){} }); }catch(e){}
+    if(saveBlocked) setTimeout(()=>toast('저장된 내용을 읽지 못했습니다. 내용 보호를 위해 저장을 멈췄습니다 — 앱을 껐다 켜 주세요.'), 700);
+    step('decideStartScreen', decideStartScreen);
+    window.addEventListener('load', ()=> step('decideStartScreen', decideStartScreen));
+    if(bootErrors.length) showBootError();
+  }).catch(err=>{
+    bootErrors.push({ where:'load', err:err });
+    showBootError();
+  });
+})();
+
+/* ---------- 시작 중 오류 처리 ----------
+   한 군데가 실패해도 흰 화면으로 두지 않는다. 무엇이 어디서 실패했는지 화면에 보여준다. */
+let bootErrors = [];
+function step(name, fn){
+  try{ fn(); }
+  catch(e){
+    bootErrors.push({ where:name, err:e });
+    try{ console.error('[단서메신저] ' + name + ' 실패', e); }catch(x){}
+  }
+}
+function showBootError(){
+  const el = document.getElementById(BOOT_ERR_BOX);
+  if(!el) return;
+  const lines = bootErrors.map(b=>{
+    const e = b.err || {};
+    const st = String(e.stack || '').split('\n').slice(0, 3).join(' / ');
+    return '<b>' + esc(b.where) + '</b> — ' + esc(String(e.message || e.name || e))
+         + (st ? '<br><span style="color:#b9c3cc">' + esc(st) + '</span>' : '');
+  });
+  el.innerHTML = '<div class="empty" style="user-select:text;-webkit-user-select:text;text-align:left;padding:24px 16px">'
+    + '<div style="text-align:center;margin-bottom:14px">내용을 불러오지 못했습니다.<br><br>'
+    + '주소 끝에 <b>?reset=1</b> 을 붙여 다시 열어보세요.<br>'
+    + '브라우저에서 <b>Ctrl+Shift+R</b> 로 새로고침해도 됩니다.</div>'
+    + '<div style="font-size:10.5px;line-height:1.55;word-break:break-all">코드 버전 ' + esc(CODE_VERSION) + '<br><br>'
+    + (lines.length ? lines.join('<br><br>') : '저장된 내용을 읽는 중 응답이 없습니다')
+    + '</div></div>';
+}
+setTimeout(function(){
+  if(!data){ bootErrors.push({ where:'load', err:{message:'저장된 내용을 읽는 중 응답이 없습니다'} }); showBootError(); }
+}, 6000);
+
+/* 서비스워커: 최신 파일 우선(network-first) + 예전 캐시 자동 삭제 */
+if(!('serviceWorker' in navigator)) swState = '이 브라우저는 지원 안 함';
+else if(location.protocol.indexOf('http') !== 0) swState = '파일 직접 열기 — 사용 불가';
+else {
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    swState = '작동 중';
+    applyAppIdentity();
+    refreshAdminInfo();
+  });
+  navigator.serviceWorker.register('./sw.js?v=' + encodeURIComponent(DATA_VERSION), {updateViaCache:'none'})
+    .then(reg=>{
+      swState = '등록됨 (제어 대기)';
+      refreshAdminInfo();
+      return navigator.serviceWorker.ready;
+    })
+    .then(()=>{
+      swState = navigator.serviceWorker.controller ? '작동 중' : '등록됨 (새로고침하면 작동)';
+      applyAppIdentity();
+      refreshAdminInfo();
+    })
+    .catch(e=>{
+      swState = '등록 실패: ' + ((e && e.message) ? e.message : String(e));
+      refreshAdminInfo();
+    });
+}
+
+/* 실행할 때마다 서버의 index.html 을 확인해서 새 파일이면 갈아끼운다 */
+setTimeout(function once(){ if(!data){ setTimeout(once,500); return; } checkForUpdate(false); }, 1500);
+</script>
+
+
+
+</body></html>
