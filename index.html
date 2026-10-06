@@ -30,63 +30,162 @@
   .scroll { flex:1; overflow-y:auto; min-height:0; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     padding-bottom:calc(var(--safe-b));padding-bottom:calc(env(safe-area-inset-bottom, 0px) + var(--safe-b)); }
 
+  /* ==========================================================
+     손님 화면 테마 — 아이폰 / 삼성 × 일반 / 다크 (총 4가지)
+     #phone 에 skin-ios | skin-sam 과 (다크일 때) dark 가 붙는다.
+     색은 모두 아래 변수로 모아 두어 테마마다 값만 바꾼다.
+     ========================================================== */
+  #phone {
+    --bg:#fff;            /* 화면 바탕 */
+    --fg:#141414;         /* 기본 글자 */
+    --sub:#8b8f94;        /* 흐린 글자 */
+    --dim:#9aa0a6;        /* 더 흐린 글자(시간 등) */
+    --line:#f0f0f2;       /* 구분선 */
+    --field:#f1f2f4;      /* 검색창·입력칸 바탕 */
+    --sheet:transparent;  /* 목록 카드 시트 */
+    --sheet-r:0px;        /* 시트 모서리 */
+    --press:#f5f6f8;      /* 눌렀을 때 */
+    --in-bg:#f1f2f4;      /* 받은 말풍선 */
+    --in-fg:#141414;
+    --out-bg:#0a7cff;     /* 보낸 말풍선 */
+    --out-fg:#fff;
+    --badge:#ff5a4d;      /* 안읽음 뱃지 */
+    --accent:#0a7cff;     /* 포인트 색 */
+    --head-fg:#3c3c3c;    /* 헤더 아이콘 */
+  }
+  #phone.dark {
+    --bg:#000;
+    --fg:#f2f3f5;
+    --sub:#9ba1a8;
+    --dim:#8a9096;
+    --line:#1f2124;
+    --field:#1c1d20;
+    --press:#1a1b1e;
+    --in-bg:#26272b;
+    --in-fg:#f2f3f5;
+    --head-fg:#dfe3e8;
+  }
+  #phone.skin-sam {
+    --bg:#f7f7f7;
+    --sheet:#fff;
+    --sheet-r:22px;
+    --field:#f1f1f3;
+    --in-bg:#f1f1f3;
+    --out-bg:#dcdde1;     /* 삼성은 보낸 말풍선도 회색 */
+    --out-fg:#111;
+    --badge:#f2643c;
+    --accent:#f2643c;
+    --head-fg:#1c1c1c;
+    --press:#f2f3f5;
+  }
+  #phone.skin-sam.dark {
+    --bg:#121212;
+    --sheet:#1c1d1f;
+    --field:#232427;
+    --in-bg:#232427;
+    --out-bg:#3a3d42;
+    --out-fg:#f2f3f5;
+    --line:#2a2b2e;
+    --press:#232427;
+  }
+  #phone { background:var(--bg); }
+  #listScreen, #roomScreen { background:var(--bg); }
+
   /* ===== 목록 화면 헤더 ===== */
-  .list-head { flex-shrink:0; padding:6px 8px 2px; }
+  .list-head { flex-shrink:0; padding:6px 8px 2px; background:var(--bg); }
   .list-head .toprow { display:flex; align-items:center; height:44px; padding:0 8px; }
-  .list-title { flex:1; font-size:22px; font-weight:700; color:#111; letter-spacing:-.3px; user-select:none; }
+  .list-title { flex:1; font-size:22px; font-weight:700; color:var(--fg); letter-spacing:-.3px; user-select:none; }
   .head-icons { display:flex; gap:2px; }
   .head-icons button { width:40px; height:40px; border:none; background:none; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; color:#3c3c3c; border-radius:50%; }
+    display:flex; align-items:center; justify-content:center; color:var(--head-fg); border-radius:50%; }
   .head-icons svg { width:23px; height:23px; }
-  .searchbar { margin:6px 16px 8px; height:42px; background:#f1f2f4; border-radius:21px;
-    display:flex; align-items:center; padding:0 15px; gap:9px; color:#9aa0a6; font-size:14.5px; }
+  .searchbar { margin:6px 16px 8px; height:42px; background:var(--field); border-radius:21px;
+    display:flex; align-items:center; padding:0 15px; gap:9px; color:var(--dim); font-size:14.5px; }
   .searchbar svg { width:19px; height:19px; }
+  /* 삼성: 검색창·연필 버튼 없이 제목 + 검색/⋮, 제목이 더 크고 굵다 */
+  #phone.skin-sam .list-head { padding:10px 6px 6px; }
+  #phone.skin-sam .list-head .toprow { height:52px; padding:0 8px 0 14px; }
+  #phone.skin-sam .list-title { font-size:23px; font-weight:800; letter-spacing:-.4px; }
+  #phone.skin-sam .head-icons svg { width:24px; height:24px; }
+  #phone.skin-sam .searchbar { display:none; }
+  #phone.skin-sam #btnFull { display:none; }
+
+  /* 오른쪽 아래 새 메시지 버튼 (삼성에서만 보인다) */
+  .fab { display:none; position:absolute; right:16px;
+    bottom:calc(20px + env(safe-area-inset-bottom, 0px) + var(--safe-b));
+    width:58px; height:58px; border-radius:50%; background:var(--sheet, #fff); border:none; cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.18); align-items:center; justify-content:center;
+    color:var(--fg); z-index:5; }
+  .fab svg { width:26px; height:26px; }
+  #phone.skin-sam .fab { display:flex; }
 
   /* ===== 대화 목록 ===== */
-  .thread { display:flex; align-items:center; padding:11px 16px; gap:13px; cursor:pointer; }
-  .thread:active { background:#f5f6f8; }
+  .sheet { background:var(--sheet); border-radius:var(--sheet-r); overflow:hidden; }
+  #phone.skin-sam #threadList { padding:0 8px; }
+  #phone.skin-sam .sheet { margin-bottom:10px; }
+  .thread { display:flex; align-items:center; padding:11px 16px; gap:13px; cursor:pointer; position:relative; }
+  .thread:active { background:var(--press); }
   .avatar { width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0;
     display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:600; color:#fff; }
   .avatar img { width:100%; height:100%; object-fit:cover; }
   .thread-meta { flex:1; min-width:0; }
   .thread-name-row { display:flex; align-items:baseline; gap:6px; }
-  .thread-name { font-size:15.5px; font-weight:600; color:#141414; white-space:nowrap;
+  .thread-name { font-size:15.5px; font-weight:600; color:var(--fg); white-space:nowrap;
     overflow:hidden; text-overflow:ellipsis; }
   .thread-name.unreadname { font-weight:700; }
   .thread-pin { font-size:11px; flex-shrink:0; }
-  .thread-preview { font-size:13.5px; color:#8b8f94; margin-top:3px; white-space:nowrap;
+  .thread-preview { font-size:13.5px; color:var(--sub); margin-top:3px; white-space:nowrap;
     overflow:hidden; text-overflow:ellipsis; }
-  .thread-preview.unread { color:#2b2b2b; }
+  .thread-preview.unread { color:var(--fg); }
   .thread-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
-  .thread-time { font-size:12px; color:#9aa0a6; }
-  .thread-badge { min-width:19px; height:19px; padding:0 5px; border-radius:10px; background:#ff5a4d;
+  .thread-time { font-size:12px; color:var(--dim); }
+  .thread-badge { min-width:19px; height:19px; padding:0 5px; border-radius:10px; background:var(--badge);
     color:#fff; font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  /* 삼성: 흰 카드 안에 줄, 줄 사이 구분선, 미리보기 두 줄 */
+  #phone.skin-sam .thread { align-items:flex-start; padding:12px 16px 12px 14px; }
+  #phone.skin-sam .thread + .thread::before { content:""; position:absolute; left:56px; right:16px; top:0;
+    height:1px; background:var(--line); }
+  #phone.skin-sam .avatar { width:48px; height:48px; font-size:19px; font-weight:700; }
+  #phone.skin-sam .thread-name-row { align-items:center; }
+  #phone.skin-sam .thread-name { font-size:16.5px; font-weight:700; letter-spacing:-.2px; }
+  #phone.skin-sam .thread-name.unreadname { font-weight:800; }
+  #phone.skin-sam .thread-preview { font-size:14px; line-height:1.38; white-space:normal;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; word-break:break-all; }
+  #phone.skin-sam .thread-right { gap:7px; padding-top:2px; }
+  #phone.skin-sam .thread-time { font-size:12.5px; }
+  #phone.skin-sam .thread-badge { min-width:22px; height:22px; border-radius:11px; font-size:12px; }
 
-  .empty { text-align:center; color:#9aa0a6; font-size:14px; line-height:1.9; padding:70px 30px; }
+  .empty { text-align:center; color:var(--dim); font-size:14px; line-height:1.9; padding:70px 30px; }
 
   /* ===== 대화방 화면 ===== */
   .room-head { flex-shrink:0; height:56px; display:flex; align-items:center; padding:0 6px 0 4px;
-    border-bottom:1px solid #f0f0f2; background:#fff; gap:4px; }
+    border-bottom:1px solid var(--line); background:var(--bg); gap:4px; }
   .room-head .back { width:42px; height:44px; border:none; background:none; font-size:30px;
-    color:#2c2c2c; cursor:pointer; line-height:1; }
+    color:var(--head-fg); cursor:pointer; line-height:1; }
   .room-head .r-av { width:36px; height:36px; border-radius:50%; overflow:hidden; flex-shrink:0;
     display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; color:#fff; }
   .room-head .r-av img { width:100%; height:100%; object-fit:cover; }
   .room-head .r-info { flex:1; min-width:0; margin-left:9px; }
-  .room-head .r-name { font-size:16px; font-weight:600; color:#141414; white-space:nowrap;
+  .room-head .r-name { font-size:16px; font-weight:600; color:var(--fg); white-space:nowrap;
     overflow:hidden; text-overflow:ellipsis; }
-  .room-head .r-sub { font-size:11.5px; color:#9aa0a6; margin-top:1px; white-space:nowrap;
+  .room-head .r-name .caret { display:none; font-size:11px; color:var(--dim); margin-left:5px; font-weight:400; }
+  #phone.skin-sam .room-head .r-name { font-size:17px; font-weight:800; letter-spacing:-.2px; }
+  #phone.skin-sam .room-head .r-name .caret { display:inline; }
+  .room-head .r-sub { font-size:11.5px; color:var(--dim); margin-top:1px; white-space:nowrap;
     overflow:hidden; text-overflow:ellipsis; }
   .room-head .r-icons { display:flex; }
   .room-head .r-icons button { width:42px; height:44px; border:none; background:none; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; color:#3c3c3c; }
+    display:flex; align-items:center; justify-content:center; color:var(--head-fg); }
   .room-head .r-icons svg { width:22px; height:22px; }
 
-  .messages { flex:1; overflow-y:auto; min-height:0; padding:12px 12px 8px; background:#fff;
+  .messages { flex:1; overflow-y:auto; min-height:0; padding:12px 12px 8px; background:var(--bg);
     -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
 
   .date-divider { text-align:center; margin:14px 0 12px; }
-  .date-divider span { font-size:11.5px; color:#9aa0a6; background:#f1f2f4; padding:4px 12px; border-radius:12px; }
+  .date-divider span { font-size:11.5px; color:var(--dim); background:var(--field); padding:4px 12px; border-radius:12px; }
+  /* 삼성: 알약 없이 가운데 회색 글씨 */
+  #phone.skin-sam .date-divider { margin:16px 0 12px; }
+  #phone.skin-sam .date-divider span { background:none; padding:0; font-size:12.5px; font-weight:500; }
 
   .msg-row { display:flex; align-items:flex-end; gap:7px; margin-bottom:3px; }
   .msg-row.mine { flex-direction:row-reverse; }
@@ -96,31 +195,74 @@
   .m-av.spacer { background:transparent !important; }
   .m-col { max-width:74%; display:flex; flex-direction:column; }
   .msg-row.mine .m-col { align-items:flex-end; }
-  .m-sender { font-size:11.5px; color:#8b8f94; margin:2px 0 3px 4px; }
+  .m-sender { font-size:11.5px; color:var(--sub); margin:2px 0 3px 4px; }
   .m-line { display:flex; align-items:flex-end; gap:6px; }
   .msg-row.mine .m-line { flex-direction:row-reverse; }
-  .bubble { padding:9px 13px; border-radius:19px; font-size:14.5px; line-height:1.42; color:#141414;
-    background:#f1f2f4; word-break:break-word; white-space:pre-wrap; }
-  .msg-row.mine .bubble { background:#0a7cff; color:#fff; }
-  .bubble.img-bubble { padding:3px; background:#f1f2f4; cursor:pointer; }
-  .msg-row.mine .bubble.img-bubble { background:#e3effd; }
+  .bubble { padding:9px 13px; border-radius:19px; font-size:14.5px; line-height:1.42; color:var(--in-fg);
+    background:var(--in-bg); word-break:break-word; white-space:pre-wrap; }
+  .msg-row.mine .bubble { background:var(--out-bg); color:var(--out-fg); }
+  .bubble.img-bubble { padding:3px; background:var(--in-bg); cursor:pointer; }
+  .msg-row.mine .bubble.img-bubble { background:var(--out-bg); }
   .bubble.img-bubble img { display:block; max-width:210px; width:100%; border-radius:16px; }
-  .bubble.img-bubble .cap { padding:6px 9px 4px; font-size:14px; color:#141414; }
+  .bubble.img-bubble .cap { padding:6px 9px 4px; font-size:14px; }
   .m-info { display:flex; flex-direction:column; align-items:flex-end; gap:1px; margin-bottom:1px; }
   .msg-row:not(.mine) .m-info { align-items:flex-start; }
-  .m-time { font-size:10.5px; color:#9aa0a6; white-space:nowrap; }
-  .m-status { font-size:10.5px; color:#0a7cff; white-space:nowrap; font-weight:500; }
+  .m-time { font-size:10.5px; color:var(--dim); white-space:nowrap; }
+  .m-status { font-size:10.5px; color:var(--accent); white-space:nowrap; font-weight:500; }
+  .m-unread { display:none; font-size:12px; color:var(--badge); white-space:nowrap; font-weight:800; line-height:1; }
+  /* 삼성: 말풍선이 더 넓고 둥글며, 상태표시는 글자 대신 숫자 1 */
+  #phone.skin-sam .msg-row { gap:8px; margin-bottom:8px; }
+  #phone.skin-sam .m-av { width:34px; height:34px; font-size:14px; font-weight:700; }
+  #phone.skin-sam .m-col { max-width:76%; }
+  #phone.skin-sam .m-sender { font-size:12.5px; font-weight:600; }
+  #phone.skin-sam .m-line { gap:7px; }
+  #phone.skin-sam .bubble { padding:10px 14px; border-radius:20px; font-size:15px; line-height:1.45; }
+  #phone.skin-sam .m-time { font-size:11.5px; }
+  #phone.skin-sam .m-status { display:none; }
+  #phone.skin-sam .m-unread { display:inline; }
 
   /* 하단 입력바 (장식용, 손님 모드에서 비활성) */
   .inputbar { flex-shrink:0; display:flex; align-items:center; gap:9px;
     padding:8px 12px calc(8px + var(--safe-b));padding:8px 12px calc(8px + env(safe-area-inset-bottom, 0px) + var(--safe-b));
-    border-top:1px solid #f0f0f2; background:#fff; }
-  .inputbar .plus { width:26px; height:26px; color:#8b8f94; flex-shrink:0; }
-  .inputbar .fake-input { flex:1; height:38px; background:#f1f2f4; border-radius:19px;
-    display:flex; align-items:center; padding:0 15px; color:#9aa0a6; font-size:14px; }
+    border-top:1px solid var(--line); background:var(--bg); }
+  .inputbar .plus { width:26px; height:26px; color:var(--sub); flex-shrink:0; }
+  .inputbar .ic { display:none; width:25px; height:25px; color:var(--head-fg); flex-shrink:0; }
+  .inputbar .fake-input { flex:1; height:38px; background:var(--field); border-radius:19px;
+    display:flex; align-items:center; justify-content:space-between; padding:0 15px; color:var(--dim); font-size:14px; gap:8px; }
+  .inputbar .fake-input .rr { display:none; gap:9px; color:var(--sub); flex-shrink:0; }
+  .inputbar .fake-input .rr svg { width:21px; height:21px; }
   .inputbar .send { width:36px; height:36px; border-radius:50%; background:#c9ccd1; color:#fff;
     display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .inputbar .send svg { width:19px; height:19px; }
+  /* 삼성: 사진·카메라·＋ 아이콘과 입력칸 안의 이모지·마이크 */
+  #phone.skin-sam .inputbar { gap:10px; border-top:none; padding-top:9px; }
+  #phone.skin-sam .inputbar .plus { display:none; }
+  #phone.skin-sam .inputbar .send { display:none; }
+  #phone.skin-sam .inputbar .ic { display:block; }
+  #phone.skin-sam .inputbar .fake-input { height:42px; border-radius:21px; padding:0 14px; font-size:14.5px; }
+  #phone.skin-sam .inputbar .fake-input .rr { display:flex; }
+
+  /* 관리자 — 테마 고르기 버튼 (2×2) */
+  .skin-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+  .skin-btn { display:flex; align-items:center; gap:9px; border:1px solid #d7dde3; background:#fff;
+    border-radius:10px; padding:9px 10px; font-size:13px; font-weight:700; color:#33414d;
+    cursor:pointer; font-family:inherit; text-align:left; }
+  .skin-btn.on { border-color:#0a7cff; background:#f2f8ff; color:#0a5bbd; box-shadow:0 0 0 1px #0a7cff inset; }
+  .skin-prev { width:30px; height:38px; border-radius:6px; flex-shrink:0; border:1px solid #d7dde3;
+    display:flex; flex-direction:column; justify-content:center; gap:3px; padding:4px; overflow:hidden; }
+  .skin-prev i { display:block; height:6px; border-radius:3px; }
+  .skin-prev.ios { background:#fff; }
+  .skin-prev.ios i:first-child { width:62%; background:#f1f2f4; }
+  .skin-prev.ios i:last-child { width:78%; margin-left:auto; background:#0a7cff; }
+  .skin-prev.ios_dark { background:#000; border-color:#333; }
+  .skin-prev.ios_dark i:first-child { width:62%; background:#26272b; }
+  .skin-prev.ios_dark i:last-child { width:78%; margin-left:auto; background:#0a7cff; }
+  .skin-prev.sam { background:#f7f7f7; }
+  .skin-prev.sam i:first-child { width:62%; background:#fff; border:1px solid #e6e6e8; }
+  .skin-prev.sam i:last-child { width:78%; margin-left:auto; background:#dcdde1; }
+  .skin-prev.sam_dark { background:#121212; border-color:#333; }
+  .skin-prev.sam_dark i:first-child { width:62%; background:#232427; }
+  .skin-prev.sam_dark i:last-child { width:78%; margin-left:auto; background:#3a3d42; }
 
   /* ===== 사진 크게 보기 ===== */
   #photoViewer { display:none; position:absolute; top:0;right:0;bottom:0;left:0; z-index:200; background:#000;
@@ -545,9 +687,49 @@
 .msg-editor .er2>*{margin-bottom:8px}
 .msg-editor .er2 label>*+*{margin-left:5px}
 .msg-editor .er3>*+*{margin-left:6px}
+.confirm-actions>*+*{margin-left:8px}</style><style id="oldBrowserGap">.head-icons>*+*{margin-left:2px}
+.searchbar>*+*{margin-left:9px}
+.thread>*+*{margin-left:13px}
+.thread-name-row>*+*{margin-left:6px}
+.thread-right>*+*{margin-top:6px}
+.room-head>*+*{margin-left:4px}
+.msg-row>*+*{margin-left:7px}
+.m-line>*+*{margin-left:6px}
+.m-info>*+*{margin-top:1px}
+.inputbar>*+*{margin-left:9px}
+.inputbar .fake-input>*+*{margin-left:8px}
+.skin-btn>*+*{margin-left:9px}
+.skin-prev>*+*{margin-top:3px}
+.admin-header .row-actions>*{margin-right:8px}
+.admin-header .row-actions>*{margin-bottom:8px}
+.bp-row>*+*{margin-left:10px}
+.admin-body>*+*{margin-left:14px}
+.add-row>*+*{margin-left:8px}
+.admin-section h3>*+*{margin-left:8px}
+.row-actions>*{margin-right:7px}
+.row-actions>*{margin-bottom:7px}
+.crumb>*{margin-right:8px}
+.crumb>*{margin-bottom:8px}
+.admin-list-item .top>*+*{margin-left:8px}
+.ppl-row>*+*{margin-left:10px}
+.ppl-head>*{margin-right:8px}
+.ppl-head>*{margin-bottom:8px}
+.ppl-btns>*{margin-right:6px}
+.ppl-btns>*{margin-bottom:6px}
+.part-row>*+*{margin-left:11px}
+.part-name>*{margin-right:6px}
+.part-name>*{margin-bottom:6px}
+.part-actions>*{margin-right:5px}
+.part-actions>*{margin-bottom:5px}
+.av-edit>*+*{margin-left:12px}
+.msg-editor .er1>*+*{margin-left:8px}
+.msg-editor .er2>*{margin-right:8px}
+.msg-editor .er2>*{margin-bottom:8px}
+.msg-editor .er2 label>*+*{margin-left:5px}
+.msg-editor .er3>*+*{margin-left:6px}
 .confirm-actions>*+*{margin-left:8px}</style></head>
 <body>
-<div id="phone" style="--safe-b: 0px;">
+<div id="phone" style="--safe-b: 0px;" class="skin-ios dark">
   <div class="mode-pill" id="modePill">관리자 모드</div>
 
   <!-- 대화 목록 화면 -->
@@ -573,15 +755,26 @@
       </div>
     </div>
     <div class="scroll" id="threadList"></div>
+    <!-- 삼성 테마에서만 보이는 새 메시지 버튼 (관리자일 때 전체화면 토글) -->
+    <button class="fab" id="btnFab" title="새 메시지 (관리자: 전체화면)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 11.5c0 4.1-3.6 7.5-8 7.5-.8 0-1.6-.1-2.3-.3L5 20l1.3-3.4C4.9 15.3 4 13.5 4 11.5 4 7.4 7.6 4 12 4s8 3.4 8 7.5z"></path>
+        <path d="M12 8.6v5.8M9.1 11.5h5.8"></path>
+      </svg>
+    </button>
   </div>
 
   <!-- 대화방 화면 -->
   <div class="screen" id="roomScreen">
     <div class="room-head">
       <button class="back" id="btnBack">‹</button>
-      <div class="r-av" id="roomAv" style="background: rgb(229, 115, 107);">김</div>
+      <div class="r-av" id="roomAv" style="background: rgb(227, 231, 236);"><svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#c3c9d0"></rect>
+    <circle cx="50" cy="40" r="16" fill="#f4f6f8"></circle>
+    <path d="M50 60c-18 0-30 13-32 34h64c-2-21-14-34-32-34z" fill="#f4f6f8"></path>
+  </svg></div>
       <div class="r-info">
-        <div class="r-name" id="roomName">김훈남</div>
+        <div class="r-name" id="roomName">1588-1588<span class="caret">▾</span></div>
         <div class="r-sub" id="roomSub"></div>
       </div>
       <div class="r-icons">
@@ -595,8 +788,18 @@
     </div>
     <div class="messages" id="messages"></div>
     <div class="inputbar">
+      <!-- 삼성 테마에서만 보이는 사진·카메라·＋ 아이콘 -->
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="3"></rect><circle cx="8.5" cy="10" r="1.6"></circle><path d="M4 17l4.6-4.3 3.2 2.9 3-2.6L20 17"></path></svg>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.4-2h7.2l1.4 2h3a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1v-8a1 1 0 011-1z"></path><circle cx="12" cy="13" r="3.4"></circle></svg>
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
       <svg class="plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
-      <div class="fake-input">메시지 입력</div>
+      <div class="fake-input">
+        <span>메시지 입력</span>
+        <span class="rr">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"></circle><circle cx="9.3" cy="10.2" r="1" fill="currentColor"></circle><circle cx="14.7" cy="10.2" r="1" fill="currentColor"></circle><path d="M8.8 14.6c1.8 1.6 4.6 1.6 6.4 0" stroke-linecap="round"></path></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4.5a2.6 2.6 0 012.6 2.6v5a2.6 2.6 0 01-5.2 0v-5A2.6 2.6 0 0112 4.5z"></path><path d="M6.5 11.5a5.5 5.5 0 0011 0M12 17.5V20"></path></svg>
+        </span>
+      </div>
       <span class="send">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"></path></svg>
       </span>
@@ -665,9 +868,10 @@
    ============================================================ */
 
 /*__CS_DATA_START__ 아래 두 줄이 이 파일에 들어있는 대화 내용입니다. */
-const DATA_VERSION = "2026-09-30-171247";
+const DATA_VERSION = "2026-10-06-170815";
 const EMBEDDED_DATA = {
  "appName": "메시지",
+ "skin": "ios",
  "tree": [
   {
    "id": "seedc1",
@@ -679,12 +883,31 @@ const EMBEDDED_DATA = {
      "lists": [
       "부평점_연애프로"
      ]
-    },
+    }
+   ]
+  },
+  {
+   "id": "trss",
+   "name": "성수점",
+   "children": [
     {
-     "id": "x2i91xrw",
-     "name": "분신사바",
+     "id": "trss1",
+     "name": "폐공장",
      "lists": [
-      "부평점_분신사바"
+      "성수점_폐공장"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "xd8gw6x6",
+   "name": "강남 2호점",
+   "children": [
+    {
+     "id": "xxjyosh8",
+     "name": "하얀방",
+     "lists": [
+      "강남_2호점_하얀방"
      ]
     }
    ]
@@ -984,11 +1207,13 @@ const EMBEDDED_DATA = {
      "participants": [
       {
        "id": "xva540pu",
-       "name": "새빛여고 이사장님"
+       "name": "새빛여고 이사장님",
+       "sub": ""
       },
       {
        "id": "xceicjg8",
-       "name": "천선생"
+       "name": "천선생",
+       "sub": ""
       }
      ],
      "messages": [
@@ -1086,94 +1311,849 @@ const EMBEDDED_DATA = {
    "today": "2026-03-25"
   },
   {
-   "key": "부평점_분신사바",
-   "label": "분신사바",
+   "key": "성수점_폐공장",
+   "label": "폐공장",
+   "title": "메시지",
+   "bottomPad": 0,
+   "today": "2025-07-15",
+   "unified": true,
+   "people": [
+    {
+     "name": "이작가",
+     "sub": "",
+     "avatar": "",
+     "silo": 0,
+     "id": "p1kyppdp"
+    },
+    {
+     "name": "박피디",
+     "sub": "",
+     "avatar": "",
+     "silo": 1,
+     "id": "p1dmk9ow"
+    },
+    {
+     "name": "한서린",
+     "sub": "",
+     "avatar": "",
+     "silo": 0,
+     "id": "pd7cgk0"
+    },
+    {
+     "name": "더마시크 이실장",
+     "sub": "",
+     "avatar": "",
+     "silo": 1,
+     "id": "pqlbt90"
+    },
+    {
+     "name": "회장님핏 김실장",
+     "sub": "",
+     "avatar": "",
+     "silo": 0,
+     "id": "p1v6xm2k"
+    },
+    {
+     "name": "자나 마케팅실_김홍보",
+     "sub": "",
+     "avatar": "",
+     "silo": 1,
+     "id": "p19j4fg"
+    },
+    {
+     "name": "마라엔터 손팀장",
+     "sub": "",
+     "avatar": "",
+     "silo": 0,
+     "id": "ptewh04"
+    },
+    {
+     "name": "열정 기획 최실장",
+     "sub": "",
+     "avatar": "",
+     "silo": 1,
+     "id": "p1nbyihw"
+    },
+    {
+     "name": "수리닥터",
+     "sub": "",
+     "avatar": "",
+     "silo": 0,
+     "id": "p13us8tw"
+    },
+    {
+     "name": "1588-1588",
+     "sub": "",
+     "avatar": "",
+     "silo": 1,
+     "id": "pfjd350"
+    },
+    {
+     "id": "pk4r7js",
+     "name": "무대표",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    }
+   ],
+   "threads": [
+    {
+     "id": "sft1",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "p1kyppdp": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "sfp101",
+       "name": "이작가",
+       "sub": ""
+      },
+      {
+       "id": "sfp102",
+       "name": "더마시크 이실장",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm101",
+       "senderName": "더마시크 이실장",
+       "text": "이번 신제품 라인 <씨솔트 앰플> 관련 건인데요,\n이번엔 <겟잇뷰랩>기존 제품에 유해 성분 있다는\n내용으로 가능합니까?",
+       "image": "",
+       "time": "오전 9:00",
+       "date": "2024-01-20",
+       "status": ""
+      },
+      {
+       "id": "sfm102",
+       "senderName": "이작가",
+       "text": "가격만 맞춰준다면 얼마든지요.",
+       "image": "",
+       "time": "오전 9:05",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm103",
+       "senderName": "더마시크 이실장",
+       "text": "지난달 점유율 역전당해서\n이번에 확실히 눌러야 합니다.",
+       "image": "",
+       "time": "오전 9:07",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm104",
+       "senderName": "이작가",
+       "text": "방송에 내보낼 겟잇뷰램 제품\n성분표 만들어서 보내주세요.\n내용 토대로 대본 작성해서 보내드리죠.",
+       "image": "",
+       "time": "오전 9:10",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm105",
+       "senderName": "더마시크 이실장",
+       "text": "알겠습니다. 현금은 지난 방식대로 3000만원\n맞춰놨고요.  명품백 하나 추가로 보냅니다.\n방송 나가면 다음 달 '브랜드대상' 수상도\n들어갈 수 있게 작업 중이에요.",
+       "image": "",
+       "time": "오전 9:15",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm106",
+       "senderName": "이작가",
+       "text": "알겠습니다. 이번에도 확실하게 보내드리죠!",
+       "image": "",
+       "time": "오전 9:17",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm107",
+       "senderName": "더마시크 이실장",
+       "text": "역시 작가님… 🙏 이번 판도 기대하겠습니다!",
+       "image": "",
+       "time": "오전 9:20",
+       "date": "",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "sft2",
+     "isGroup": false,
+     "only": [],
+     "per": {},
+     "participants": [
+      {
+       "id": "sfp201",
+       "name": "이작가",
+       "sub": ""
+      },
+      {
+       "id": "sfp202",
+       "name": "회장님핏 김실장",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm201",
+       "senderName": "회장님핏 김실장",
+       "text": "작가님, 무드앤컷 쪽 이번 시즌 컬렉션 터뜨려야 하는데…\n파.보.자에서 원단 유해성 쪽으로 잡아주실 수 있을까요?",
+       "image": "",
+       "time": "오전 10:00",
+       "date": "2024-02-18",
+       "status": ""
+      },
+      {
+       "id": "sfm202",
+       "senderName": "이작가",
+       "text": "가능요.\n걔네 린넨라인 말 많던데 그거 물고 늘어지면 되겠네요\n\"접촉성 피부염 유발 우려\" 정도로 갈까요?",
+       "image": "",
+       "time": "오전 10:10",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm203",
+       "senderName": "회장님핏 김실장",
+       "text": "딱 그 정도면 아주 좋죠.\n자극적 제목으로 뽑아주시면 기사 퍼지면서 자연스럽게\n브랜드 이미지 박살날 겁니다.",
+       "image": "",
+       "time": "오전 10:15",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm204",
+       "senderName": "이작가",
+       "text": "보도 나가고 이틀 안에 '회장님핏'에서\n\"친환경 코튼으로 새 판짜기\" 뭐 이런 느낌으로\n기사 준비해주세요.",
+       "image": "",
+       "time": "오전 10:17",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm205",
+       "senderName": "회장님핏 김실장",
+       "text": "역시 제대로 판 짜실 줄 아셔!\n현금 3000만원은 지난번 계좌로? 골프백도\n이번엔 회장님 사비로 하나 보내드린답니다 ㅎㅎ",
+       "image": "",
+       "time": "오전 10:20",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm206",
+       "senderName": "이작가",
+       "text": "감사하다고 전해주세요.\n그럼 난 무드앤컷 쪽 폐끼 원단 납품서류 위조해줄 기자랑\n컨택 들어갈게요.  소비자 인터뷰도 만들어 볼게요.",
+       "image": "",
+       "time": "오전 10:22",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm207",
+       "senderName": "회장님핏 김실장",
+       "text": "작가님… 역시 타이밍이면 타이밍, 수위면 수위…\n이런 건 작가님 아니면 못 해요!",
+       "image": "",
+       "time": "오전 10:25",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm208",
+       "senderName": "이작가",
+       "text": "나는 어떻게든 진실로 만들잖아요!",
+       "image": "",
+       "time": "오전 10:27",
+       "date": "",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "sft3",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "p1kyppdp": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "sfp301",
+       "name": "이작가",
+       "sub": ""
+      },
+      {
+       "id": "sfp302",
+       "name": "자나 마케팅실_김홍보",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm301",
+       "senderName": "자나 마케팅실_김홍보",
+       "text": "이작가님, 안녕하세요.\n소개받고 제안 드릴 게 있어서 연락드렸습니다.\n무심사 쪽 원단에서 발암 물질이 검출됐다는\n이야기, 슬쩍 <파.보.자>에서 언급해주시면 어떨까요?\n\"사용자 제보 기반\"으로 처리하시면 문제 없을 겁니다.",
+       "image": "",
+       "time": "오전 10:42",
+       "date": "2024-05-01",
+       "status": ""
+      },
+      {
+       "id": "sfm302",
+       "senderName": "이작가",
+       "text": "이 정도 건은 리스크 생각하면…\n숫자 얘기부터 다시 해야 할 것 같네요.",
+       "image": "",
+       "time": "오전 10:45",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm303",
+       "senderName": "자나 마케팅실_김홍보",
+       "text": "제작비 명목으로 3천 드릴 수 있습니다.\n리포트도 준비해놨고요.\n'진실 여부는 시청자 판단'으로 처리해 주시면 됩니다.",
+       "image": "",
+       "time": "오전 10:48",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm304",
+       "senderName": "이작가",
+       "text": "뒷끝 없이 확실하게 보내려면\n그 정도론 어림없죠!\n입 무거운 사람 섭외하는 것도 돈이 꽤 드는데요.",
+       "image": "",
+       "time": "오전 10:52",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm305",
+       "senderName": "자나 마케팅실_김홍보",
+       "text": "알겠습니다. 그럼 오천으로 조정하죠.\n확실하게 부탁드립니다, 이작가님.\n이번에 제대로 먹히면…\n다음 금액은 두배로 맞춰드리겠습니다.",
+       "image": "",
+       "time": "오전 10:54",
+       "date": "",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "sft4",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "p1kyppdp": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "sfp401",
+       "name": "이작가",
+       "sub": ""
+      },
+      {
+       "id": "sfp402",
+       "name": "1588-1588",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm401",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [카카오뱅크]\n입금 30,000,000원\n입금처: (주)더마시크",
+       "image": "",
+       "time": "오후 13:41",
+       "date": "2024-01-20",
+       "status": ""
+      },
+      {
+       "id": "sfm402",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [국민은행]\n입금 30,000,000원\n입금처: 실장님핏컴퍼니",
+       "image": "",
+       "time": "오후 14:30",
+       "date": "2024-02-18",
+       "status": ""
+      },
+      {
+       "id": "sfm403",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [신한은행]\n입금 40,000,000원\n입금처: 리바스푸드(주)",
+       "image": "",
+       "time": "오후 15:45",
+       "date": "2024-03-20",
+       "status": ""
+      },
+      {
+       "id": "sfm404",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [퍼팩은행]\n입금 50,000,000원\n입금처: 자나(JANA)",
+       "image": "",
+       "time": "오후 15:58",
+       "date": "2024-05-01",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "sft5",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "p1kyppdp": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "sfp501",
+       "name": "이작가",
+       "sub": ""
+      },
+      {
+       "id": "sfp502",
+       "name": "마라엔터 손팀장",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm501",
+       "senderName": "마라엔터 손팀장",
+       "text": "작가님, '마라탕후루' 방송 출연 건\n회사 쪽에서 현금 준비됐고요.\n가방이랑 시계는 따로 오늘 배송 들어갑니다.",
+       "image": "",
+       "time": "오후 2:00",
+       "date": "2024-09-10",
+       "status": ""
+      },
+      {
+       "id": "sfm502",
+       "senderName": "이작가",
+       "text": "OO예능에 꽂아주면 되는 거죠?\n이번엔 예능 교육 좀 시켜서 내보내요!",
+       "image": "",
+       "time": "오후 2:05",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm503",
+       "senderName": "마라엔터 손팀장",
+       "text": "알겠습니다! 이번에도 잘 부탁드려요 작가님!",
+       "image": "",
+       "time": "오후 2:07",
+       "date": "",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "sft6",
+     "isGroup": false,
+     "only": [],
+     "per": {},
+     "participants": [
+      {
+       "id": "sfp601",
+       "name": "이작가",
+       "sub": ""
+      },
+      {
+       "id": "sfp602",
+       "name": "열정 기획 최실장",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm601",
+       "senderName": "열정 기획 최실장",
+       "text": "작가님 이번엔 신인 보이그룹 '<열정보이즈>'인데\n리더 애가 좀 푸시 받아야 하는 상황인데 뭐 없을까요?",
+       "image": "",
+       "time": "오후 5:00",
+       "date": "2024-10-05",
+       "status": ""
+      },
+      {
+       "id": "sfm602",
+       "senderName": "이작가",
+       "text": "이번에 음악방송 MC자리 하나 공석인데\n여기 어때요? 근데 여긴 가격이 좀쎄…ㅎㅎ",
+       "image": "",
+       "time": "오후 5:10",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm603",
+       "senderName": "열정 기획 최실장",
+       "text": "에이~ 섭섭치 않게 챙겨드리죠!\n예전처럼만 해주시면 우리 대표가\n뭘 더 챙겨드릴지도 몰라요^^",
+       "image": "",
+       "time": "오후 5:15",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "sfm604",
+       "senderName": "이작가",
+       "text": "그럼 푸시 한번 넣어보죠\n현금은 저번 그 계좌로 보내주시면 됩니다~~!",
+       "image": "",
+       "time": "오후 5:18",
+       "date": "",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "sft8",
+     "isGroup": false,
+     "only": [],
+     "per": {},
+     "participants": [
+      {
+       "id": "sfp801",
+       "name": "박피디",
+       "sub": ""
+      },
+      {
+       "id": "sfp802",
+       "name": "수리닥터",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm801",
+       "senderName": "수리닥터",
+       "text": "의뢰하신 핸드폰 수리와 포렌식 완료됐으니\n방문 부탁드립니다.",
+       "image": "",
+       "time": "오전 11:55",
+       "date": "2025-06-15",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "sft9",
+     "isGroup": false,
+     "only": [],
+     "per": {},
+     "participants": [
+      {
+       "id": "sfp901",
+       "name": "한서린",
+       "sub": ""
+      },
+      {
+       "id": "sfp902",
+       "name": "1588-1588",
+       "sub": ""
+      }
+     ],
+     "messages": [
+      {
+       "id": "sfm901",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [카카오뱅크]\n입금 401,200원\n입금처: (주)GH편의점",
+       "image": "",
+       "time": "오후 11:31",
+       "date": "2025-02-17",
+       "status": ""
+      },
+      {
+       "id": "sfm902",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [카카오뱅크]\n입금 481,440원\n입금처: (주)GH편의점",
+       "image": "",
+       "time": "오후 11:24",
+       "date": "2025-03-17",
+       "status": ""
+      },
+      {
+       "id": "sfm903",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [카카오뱅크]\n입금 331,680원\n입금처: (주)쿠팡팡",
+       "image": "",
+       "time": "오후 15:11",
+       "date": "2025-04-19",
+       "status": ""
+      },
+      {
+       "id": "sfm904",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [카카오뱅크]\n입금 1,444,320원\n입금처: (주)햄버거킹",
+       "image": "",
+       "time": "오후 9:01",
+       "date": "2025-05-10",
+       "status": ""
+      },
+      {
+       "id": "sfm905",
+       "senderName": "1588-1588",
+       "text": "[Web발신] [카카오뱅크]\n입금 1,444,320원\n입금처: (주)햄버거킹",
+       "image": "",
+       "time": "오후 9:07",
+       "date": "2025-06-10",
+       "status": ""
+      }
+     ]
+    },
+    {
+     "id": "x5zcuhxb",
+     "isGroup": false,
+     "only": [
+      "pk4r7js"
+     ],
+     "per": {
+      "p1kyppdp": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "xwh2mjfz",
+       "name": "이작가"
+      },
+      {
+       "id": "xi4c6hvk",
+       "name": "무대표"
+      }
+     ],
+     "messages": [
+      {
+       "id": "xb5ddhzj",
+       "senderName": "이작가",
+       "text": "무대표님, \n제가 오늘 드린 제안 생각은 해보셨는지요",
+       "image": "",
+       "time": "오후 8:12",
+       "date": "2024-06-11",
+       "status": ""
+      },
+      {
+       "id": "x1syu8j5",
+       "senderName": "무대표",
+       "text": "그게 생각하고 말게 어딨습니까!\n말도 안 되는 제안을 하셨는데!\n",
+       "image": "",
+       "time": "오후 8:13",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xrfjfjdc",
+       "senderName": "이작가",
+       "text": "무대표님이야 말로 양심이 없으시네요\n발암물질 관련 보고서, 내부 고발자 증언,\n그걸로 충분한데요!",
+       "image": "",
+       "time": "오후 8:14",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xupn7erk",
+       "senderName": "무대표",
+       "text": "장난합니까?\n우리 원단에 그런 물질 나온 적 없습니다.\n이런 식으로 협박해서 방송해왔던겁니까?!",
+       "image": "",
+       "time": "오후 8:15",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xzlf7zms",
+       "senderName": "이작가",
+       "text": "협박이라뇨!! \n대표님, 큰일 날 말씀하시네요.\n저희도 철저하게 조사한 후에 촬영을 진행하는 건데요^^",
+       "image": "",
+       "time": "오후 8:16",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "xxka3o71",
+       "senderName": "무대표",
+       "text": "이런 식이면, 방송 촬영도 거부하겠습니다.\n방영도 하지 마세요.",
+       "image": "",
+       "time": "오후 8:17",
+       "date": "",
+       "status": ""
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "강남_2호점_하얀방",
+   "label": "하얀방",
    "title": "메시지",
    "bottomPad": 0,
    "threads": [
     {
-     "id": "x9r265mh",
+     "id": "xopet0q7",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "pk4r7js": {
+       "unread": 0
+      }
+     },
+     "participants": [
+      {
+       "id": "x4bpwm2x",
+       "name": "명사수",
+       "sub": ""
+      },
+      {
+       "id": "x7w7buz1",
+       "name": "퍼팩병원 원무과",
+       "sub": ""
+      }
+     ],
      "messages": [
       {
-       "id": "xftf7nuu",
-       "text": "안녕하세요. 사람을 좀 찾고 싶어서 처음 연락드립니다. 이름은 전세금이고, 십 년도 더 지난 과거 정보밖에 없지만 어떻게든 꼭 찾아야 합니다. 의뢰가 가능할까요?",
+       "id": "x2efskt0",
+       "senderName": "퍼팩병원 원무과",
+       "text": "명사수님 오늘 치료비 마감일입니다. 피치 못할 사정이 있으시다면 병원으로 전화부탁드려요.",
        "image": "",
-       "time": "오후 7:30",
-       "date": "2026-01-25",
-       "status": "",
-       "senderName": "김훈남"
+       "time": "",
+       "date": "2018-05-20",
+       "status": ""
       },
       {
-       "id": "x2938qn5",
-       "text": "다자바 흥신소입니다. 처음 연락 주셨군요. 남겨주신 기본 정보 확인했습니다. 워낙 오래된 기록이라 시간은 조금 걸리겠지만 바로 추적 들어가 보겠습니다.",
+       "id": "xk86y6vw",
+       "senderName": "퍼팩병원 원무과",
+       "text": "명사수님 오늘 치료비 마감일입니다. 피치 못할 사정이 있으시다면 병원으로 전화부탁드려요.",
        "image": "",
-       "time": "오후 7:31",
+       "time": "",
+       "date": "2018-08-30",
+       "status": ""
+      },
+      {
+       "id": "x88nxqg2",
+       "senderName": "퍼팩병원 원무과",
+       "text": "명사수님, 이제 결정을 내리셔야 합니다. 결제를 더 미루시면 생명에 지장이 있을 수도 있어요. 췌장암 3기는 시기를 놓치면 정말 위험해집니다.",
+       "image": "",
+       "time": "",
+       "date": "2020-01-30",
+       "status": ""
+      },
+      {
+       "id": "xs19mpj5",
+       "senderName": "명사수",
+       "text": "저도 사방으로 열심히 돈을 구하고 있어요. 어떻게든 구해볼 테니 수술 먼저 진행하면 안될까요?",
+       "image": "",
+       "time": "",
        "date": "",
-       "status": "",
-       "senderName": "이보컬"
+       "status": ""
       },
       {
-       "id": "x9jwko5a",
-       "text": "의뢰하신 전세금 씨 찾았습니다. 생각보다 아주 가까운 곳에 있었네요. 현재 유명 세무사로 활동 중이며, 억울한 사람들을 위해 '전세 사기 무료 상담'을 해주는 유튜브 채널도 운영하고 있는 꽤 유명한 인플루언서입니다. 내용 확인하시고 약속된 잔금 500만 원 입금 부탁드립니다.",
+       "id": "x4rlhm7z",
+       "senderName": "퍼팩병원 원무과",
+       "text": "여러 번 설명드렸던 대로 기존 병원비도 계속 밀렸던 지라 병원 내규상 저희도 어쩔 수가 없습니다. 어머니를 위해서라도 빠른 시일 내에 접수를 해주시길 바래요. 많은 도움을 줄 수 없어서 미안합니다.",
        "image": "",
-       "time": "오후 9:20",
-       "date": "2026-01-27",
-       "status": "",
-       "senderName": "이보컬"
-      },
-      {
-       "id": "x4ocxzit",
-       "text": "보내주신 메일과 유튜브 영상 모두 확인했습니다. 정말 감사합니다. 방금 잔금 500만 원 입금했습니다.",
-       "image": "",
-       "time": "오후 9:25",
-       "date": "",
-       "status": "",
-       "senderName": "김훈남"
-      },
-      {
-       "id": "xqkh9hnh",
-       "senderName": "이보컬",
-       "text": "입금 확인되었습니다. 깔끔한 거래 감사합니다. 의뢰를 완전히 종료합니다. 또 찾아주십쇼!",
-       "image": "",
-       "time": "오후 9:26",
+       "time": "",
        "date": "",
        "status": ""
       }
-     ],
+     ]
+    },
+    {
+     "id": "xp90xfva",
+     "isGroup": false,
+     "only": [],
+     "per": {
+      "pk4r7js_4": {
+       "unread": 0
+      }
+     },
      "participants": [
       {
-       "id": "xn8dn494",
-       "name": "김훈남",
+       "id": "xsba8ut4",
+       "name": "김교수",
        "sub": ""
       },
       {
-       "id": "xdpu1g8n",
-       "name": "이보컬",
+       "id": "xa0k4gu1",
+       "name": "김교수 단체문자용",
        "sub": ""
       }
      ],
-     "isGroup": false,
-     "only": [],
-     "per": {}
+     "messages": [
+      {
+       "id": "x697mogz",
+       "senderName": "김교수",
+       "text": "배분과 관련한 중요 발표가 있습니다. 내일(21일)밤 9시까지 그곳으로 모여주세요. 불참이나 늦는 경우에 발생할 수 있는 모든 불이익은 본인이 감내하는 것으로 이해하겠스비다.",
+       "image": "",
+       "time": "오후 10:00",
+       "date": "2020-02-20",
+       "status": ""
+      },
+      {
+       "id": "xa4euj7n",
+       "senderName": "김교수",
+       "text": "모두 회의실로 모여주세요. 여러분을 직접 맞이하지 못해 미안합니다. 모든 준비가 끝나면 여러분 앞에서 모든 것을 말씀드리겠습니다.",
+       "image": "",
+       "time": "오후 10:00",
+       "date": "2020-02-21",
+       "status": ""
+      },
+      {
+       "id": "xn0hi3ro",
+       "senderName": "김교수",
+       "text": "중요 발표 전 테이블 위에 있는 알약을 삼켜주세요. 간단한 진정제입니다. 한 분도 빠짐 없이 모두가 보는 앞에서 물과 함께 확실히 삼켜야 합니다.",
+       "image": "",
+       "time": "오후 10:00",
+       "date": "",
+       "status": ""
+      },
+      {
+       "id": "x1rnfd48",
+       "senderName": "김교수",
+       "text": "그럼 이제 자신의 방으로 돌아가 잠시 대기해주세요. 10시에 회의실에서 뵙겠습니다.",
+       "image": "",
+       "time": "오후 10:00",
+       "date": "",
+       "status": ""
+      }
+     ]
     }
    ],
    "people": [
     {
-     "id": "p1veweq8",
-     "name": "김훈남",
+     "id": "pk4r7js",
+     "name": "명사수",
      "sub": "",
      "avatar": "",
      "silo": 0
     },
     {
-     "id": "pffqe68",
-     "name": "이보컬",
+     "id": "pk4r7js_2",
+     "name": "퍼팩병원 원무과",
+     "sub": "",
+     "avatar": "",
+     "silo": 1
+    },
+    {
+     "id": "pk4r7js_3",
+     "name": "김교수",
      "sub": "",
      "avatar": "",
      "silo": 0
+    },
+    {
+     "id": "pk4r7js_4",
+     "name": "김교수 단체문자용",
+     "sub": "",
+     "avatar": "",
+     "silo": 1
     }
    ],
-   "unified": true
+   "unified": true,
+   "today": "2020-02-22"
   }
  ]
 };
@@ -1181,10 +2161,12 @@ const EMBEDDED_DATA = {
 
 /* 코드(기능) 버전. 데이터와 별개로 “이 파일의 프로그램이 언제 것인지”를 나타낸다.
    관리자 정보란에 표시되므로, 폰에 옛 파일이 올라갔는지 바로 알 수 있다. */
-const CODE_VERSION = '2026-10-01-L (구형 브라우저 호환)';
+const CODE_VERSION = '2026-10-06-U1 (테마 통합본 · 아이폰/삼성 × 일반/다크)';
 
-const STORE_KEY = 'crimescene_sms_v2';
-const LEGACY_KEYS = ['crimescene_sms_v1'];
+/* 저장 이름 뒤의 _u 는 “통합본” 이라는 뜻. 아이폰판(_v2)·삼성판(_s)과 같은 주소에 올려도
+   서로의 내용을 건드리지 않게 이름을 따로 쓴다. */
+const STORE_KEY = 'crimescene_sms_u_v2';
+const LEGACY_KEYS = [];
 const AV_COLORS = ['#e5736b','#e59a4a','#4aa6c4','#5b8def','#8a6fd4','#4bab8a','#c96fa8','#7d8fa0'];
 
 let data = null;
@@ -1202,6 +2184,44 @@ const THEME_ADMIN = '#22303c';
 function setThemeColor(c){
   const m = document.getElementById('themeColor');
   if(m && m.content !== c) m.content = c;
+}
+
+/* ============================================================
+   손님 화면 테마 — 아이폰 / 삼성 × 일반 / 다크 (총 4가지)
+   파일에 저장되는 값(data.skin)이 기본이고, 폰마다 다르게 쓰고 싶으면
+   그 기기에만 저장되는 값(SKIN_KEY)이 우선한다.
+   ============================================================ */
+const SKINS = [
+  { id:'ios',      name:'아이폰 · 일반', bar:'#ffffff' },
+  { id:'ios_dark', name:'아이폰 · 다크', bar:'#000000' },
+  { id:'sam',      name:'삼성 · 일반',   bar:'#f7f7f7' },
+  { id:'sam_dark', name:'삼성 · 다크',   bar:'#121212' }
+];
+const SKIN_KEY = 'crimescene_sms_u_skin';
+function skinById(id){ return SKINS.find(s=>s.id===id) || SKINS[0]; }
+function fileSkin(){ return skinById(data && data.skin ? data.skin : 'ios').id; }
+function deviceSkin(){
+  try{
+    const v = localStorage.getItem(SKIN_KEY);
+    return (v && SKINS.some(s=>s.id === v)) ? v : null;
+  }catch(e){ return null; }
+}
+function setDeviceSkin(id){
+  try{
+    if(id) localStorage.setItem(SKIN_KEY, id);
+    else localStorage.removeItem(SKIN_KEY);
+  }catch(e){}
+}
+function curSkin(){ return deviceSkin() || fileSkin(); }
+/* 고른 테마를 화면에 입힌다 (손님 화면에만 적용되고 관리자 화면은 그대로) */
+function applySkin(){
+  const id = curSkin();
+  const ph = document.getElementById('phone');
+  if(!ph) return;
+  ph.classList.toggle('skin-ios', id.indexOf('ios') === 0);
+  ph.classList.toggle('skin-sam', id.indexOf('sam') === 0);
+  ph.classList.toggle('dark', id.indexOf('_dark') > 0);
+  if(!document.getElementById('adminOverlay').classList.contains('active')) setThemeColor(skinById(id).bar);
 }
 
 /* ---------- 저장 / 불러오기 (버전 + 지문 도장 방식) ---------- */
@@ -1265,7 +2285,7 @@ function storedBox(){
    사진이 많아지면 localStorage(약 5MB)로는 모자라므로 IndexedDB 를 주 저장소로 쓴다.
    IndexedDB 는 기기 여유 공간에 맞춰 보통 수백 MB 까지 쓸 수 있다. */
 const BOOT_ERR_BOX = 'threadList';
-const IDB_NAME = 'crimescene_sms';
+const IDB_NAME = 'crimescene_sms_u';
 const IDB_STORE = 'box';
 const IDB_KEY = 'main';
 let idbState = 'ok';        /* ok | unavailable | error */
@@ -1472,6 +2492,8 @@ function normalize(d){
     d = { appName: d.appName || '메시지', lists: [one] };
   }
   if(!d.appName) d.appName = '메시지';
+  /* 손님 화면 테마 (아이폰/삼성 × 일반/다크) 의 파일 기본값 */
+  d.skin = skinById(d.skin).id;
   /* 저장된 내용에 빈(null) 항목이 섞여 있어도 앱이 멈추지 않게 먼저 걸러낸다 */
   d.lists = d.lists.filter(L=> L && typeof L === 'object');
   if(Array.isArray(d.tree)){
@@ -1583,17 +2605,14 @@ function curList(){ return data.lists[listIdx] || data.lists[0]; }
    폰 한 대는 한 지점만 본다. 처음 실행할 때 고르고, 그 뒤에는 바꿀 수 없다.
    다른 지점 내용은 화면에 아예 나오지 않아 스포일러를 막는다.
    (바꿔야 하면 주소 끝에 ?reset=1 을 붙여 이 기기 설정을 초기화한다) */
-const BRANCH_KEY = 'crimescene_sms_branch';
+const BRANCH_KEY = 'crimescene_sms_u_branch';
 let branchLock = null;              /* {id, name} — 기기마다 따로 저장된다 */
 function loadBranch(){
-  try{ const v = JSON.parse(localStorage.getItem(BRANCH_KEY)); branchLock = (v && typeof v === 'object') ? v : null; }
+  try{ const v = JSON.parse(keepRead(BRANCH_KEY)); branchLock = (v && typeof v === 'object') ? v : null; }
   catch(e){ branchLock = null; }
 }
 function saveBranch(){
-  try{
-    if(branchLock) localStorage.setItem(BRANCH_KEY, JSON.stringify(branchLock));
-    else localStorage.removeItem(BRANCH_KEY);
-  }catch(e){}
+  keepWrite(BRANCH_KEY, branchLock ? JSON.stringify(branchLock) : '');
 }
 function lockedC1(){
   if(!branchLock || !data) return null;
@@ -1642,13 +2661,38 @@ function enforceBranchLock(){
 }
 function treeMinDepth(){ return branchLocked() ? 1 : 0; }
 
-const VIEW_KEY = 'crimescene_sms_me';
+const VIEW_KEY = 'crimescene_sms_u_me';
 let viewAs = {};                    /* {목록키: {id,name}} — 기기마다 따로 저장된다 */
 function loadView(){
-  try{ const v = JSON.parse(localStorage.getItem(VIEW_KEY)); viewAs = (v && typeof v === 'object') ? v : {}; }
+  try{ const v = JSON.parse(keepRead(VIEW_KEY)); viewAs = (v && typeof v === 'object') ? v : {}; }
   catch(e){ viewAs = {}; }
 }
-function saveView(){ try{ localStorage.setItem(VIEW_KEY, JSON.stringify(viewAs)); }catch(e){} }
+function saveView(){ keepWrite(VIEW_KEY, JSON.stringify(viewAs)); }
+/* ---------- 두 군데에 적어 두기 ----------
+   오래된 폰은 저장해 둔 내용(localStorage)을 저장 공간이 모자랄 때 통째로 지우기도 한다.
+   그래서 고른 지점과 “나”는 쿠키에도 같이 적어 두고, 한쪽이 지워져도 다른 쪽에서 되살린다. */
+function cookieSet(name, val){
+  try{ document.cookie = name + '=' + encodeURIComponent(val) + ';path=/;max-age=34560000'; }catch(e){}
+}
+function cookieGet(name){
+  try{
+    const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }catch(e){ return ''; }
+}
+/* 저장해 둔 값을 읽는다. localStorage 가 비어 있으면 쿠키에서 꺼내 되살린다 */
+function keepRead(key){
+  let v = '';
+  try{ v = localStorage.getItem(key) || ''; }catch(e){}
+  if(v) return v;
+  v = cookieGet(key);
+  if(v){ try{ localStorage.setItem(key, v); }catch(e){} }
+  return v;
+}
+function keepWrite(key, v){
+  try{ if(v) localStorage.setItem(key, v); else localStorage.removeItem(key); }catch(e){}
+  cookieSet(key, v || '');
+}
 
 /* 인물 id 는 이름에서 만들어 어느 기기에서 만들어도 같게 한다
    (파일을 새로 받아도 폰에 고른 “나”가 그대로 유지되도록) */
@@ -2045,7 +3089,7 @@ function findListIdx(key){
   return data.lists.findIndex(L=>normKey(L.key)===n);
 }
 /* 마지막으로 본 목록을 기억해 둔다 (설치된 앱을 다시 켤 때 그 목록으로 시작) */
-const LAST_KEY = 'crimescene_sms_last_list';
+const LAST_KEY = 'crimescene_sms_u_last_list';
 function isStandalone(){
   try{
     return (window.matchMedia && (window.matchMedia('(display-mode: standalone)').matches
@@ -2055,10 +3099,10 @@ function isStandalone(){
   }catch(e){ return false; }
 }
 function rememberList(){
-  try{ localStorage.setItem(LAST_KEY, curList().key); }catch(e){}
+  keepWrite(LAST_KEY, curList().key);
 }
 function savedListKey(){
-  try{ return localStorage.getItem(LAST_KEY) || ''; }catch(e){ return ''; }
+  return keepRead(LAST_KEY) || '';
 }
 function selectListFromUrl(){
   const key = requestedListKey();
@@ -2320,7 +3364,7 @@ function orderedThreads(L){
 /* ---------- 하단 여백 ----------
    폰 기종마다 다른 값이라 “이 기기에만” 따로 저장한다.
    기기 값이 없으면 파일에 담긴 기본값을 쓴다. 내용을 업데이트해도 기기 값은 유지된다. */
-const PAD_KEY = 'crimescene_sms_pad';
+const PAD_KEY = 'crimescene_sms_u_pad';
 function devicePad(){
   try{ const v = localStorage.getItem(PAD_KEY); return (v === null || v === '') ? null : Math.max(0, Number(v)||0); }
   catch(e){ return null; }
@@ -2346,7 +3390,7 @@ function previewText(msg){
 }
 function renderList(){
   rememberList();        /* 지금 보고 있는 목록을 기억 (다음 실행 때 이 목록으로 시작) */
-  setThemeColor(THEME_LIST);
+  applySkin();           /* 고른 테마(아이폰·삼성 / 일반·다크) 입히기 */
   applyBottomPad();
   applyAppIdentity();
   const L = curList();
@@ -2362,6 +3406,10 @@ function renderList(){
     return;
   }
   let total = 0;
+  /* 삼성 테마는 흰 카드 시트 안에 줄을 담는다 (아이폰 테마에서는 시트가 투명) */
+  const sheet = document.createElement('div');
+  sheet.className = 'sheet';
+  el.appendChild(sheet);
   shown.forEach(th=>{
     const last = th.messages[th.messages.length-1];
     const preview = previewText(last);
@@ -2385,7 +3433,7 @@ function renderList(){
         ${unread>0 ? `<span class="thread-badge">${unread>999?'999+':unread}</span>`:''}
       </div>`;
     div.onclick = ()=> openThread(th.id);
-    el.appendChild(div);
+    sheet.appendChild(div);
   });
   updateAppBadge(total);
 }
@@ -2430,7 +3478,8 @@ function openThread(tid){
   const th = findThread(tid);
   if(!th) return;
   const other = mainOther(th);
-  $('#roomName').textContent = threadTitle(th);
+  /* 삼성 테마에서는 이름 옆에 ▾ 가 붙는다 (CSS 로 켜고 끈다) */
+  $('#roomName').innerHTML = esc(threadTitle(th)) + '<span class="caret">▾</span>';
   $('#roomSub').textContent = threadSub(th);
   const av = $('#roomAv');
   av.style.cssText = avatarStyle(other);
@@ -2439,7 +3488,7 @@ function openThread(tid){
   $('#listScreen').style.display = 'none';
   $('#roomScreen').classList.add('active');
   const m = $('#messages'); m.scrollTop = m.scrollHeight;
-  setThemeColor(THEME_ROOM);
+  setThemeColor(skinById(curSkin()).bar);
   pushView('room');
 }
 function backToList(){
@@ -2495,7 +3544,11 @@ function renderMessages(th){
       bubbleHtml = `<div class="bubble">${esc(msg.text)}</div>`;
     }
 
-    const statusHtml = (mine && msg.status) ? `<span class="m-status">${esc(msg.status)}</span>` : '';
+    /* 상태표시 — 아이폰 테마는 적은 글자 그대로(읽음 등), 삼성 테마는 숫자 1 로 보인다.
+       삼성판에서 옮겨온 대화는 상태값이 "1" 로 적혀 있어, 아이폰 테마에서는 “읽음”으로 보여 준다. */
+    const statusText = (msg.status === '1') ? '읽음' : msg.status;
+    const statusHtml = (mine && msg.status)
+      ? `<span class="m-status">${esc(statusText)}</span><span class="m-unread">1</span>` : '';
     const infoHtml = `<div class="m-info">${statusHtml}<span class="m-time">${esc(msg.time||'')}</span></div>`;
 
     row.innerHTML = `
@@ -3387,6 +4440,26 @@ function renderAdminHome(resetScroll){
       </div>
     </div>` : ''}
 
+    <div class="admin-section">
+      <h3>화면 테마</h3>
+      <div class="hint" style="margin-top:0;margin-bottom:10px">손님 화면을 <b>아이폰 / 삼성</b> 중 하나로, 각각 <b>일반 / 다크</b>로 고를 수 있습니다.
+        (관리자 화면은 바뀌지 않습니다)</div>
+      <div class="skin-grid">
+        ${SKINS.map(s=>`<button class="skin-btn ${curSkin()===s.id?'on':''}" data-skin="${s.id}">
+            <span class="skin-prev ${s.id}"><i></i><i></i></span>${esc(s.name)}
+          </button>`).join('')}
+      </div>
+      <div class="hint">지금 쓰는 테마: <b>${esc(skinById(curSkin()).name)}</b>
+        ${deviceSkin() ? '(이 기기에만 저장된 값)' : '(파일 기본값)'} · 파일 기본값 <b>${esc(skinById(fileSkin()).name)}</b></div>
+      <div class="row-actions">
+        <button class="btn btn-ghost btn-sm" id="skinToDevice">이 기기에만 저장</button>
+        <button class="btn btn-ghost btn-sm" id="skinClear" ${deviceSkin()?'':'disabled'}>파일 기본값으로</button>
+        <button class="btn btn-ghost btn-sm" id="skinToFile">파일 기본값으로도 저장</button>
+      </div>
+      <div class="hint">테마 버튼을 누르면 바로 바뀌고 <b>이 기기에 저장</b>됩니다.
+        모든 폰에 같은 테마를 쓰려면 <b>파일 기본값으로도 저장</b> 후 새 index.html 을 만들어 올리세요.</div>
+    </div>
+
     ${(wideAdmin() || !adminListPicked) ? '' : threadListHtml()}
     <div class="admin-section">
       <h3>백업 / 복원</h3>
@@ -3445,6 +4518,24 @@ function renderAdminHome(resetScroll){
     data.lists.forEach(L2=>{ L2.bottomPad = v; });
     save(); renderAdminHome(); toast('파일 기본값으로도 저장했습니다 (새 파일을 만들어 올려야 다른 폰에 적용됩니다)');
   };
+  /* 화면 테마 — 누르면 바로 바뀌고 이 기기에 저장된다 */
+  body.querySelectorAll('[data-skin]').forEach(btn=>{
+    btn.onclick = ()=>{
+      setDeviceSkin(btn.dataset.skin);
+      applySkin(); renderAdminHome();
+      toast(skinById(curSkin()).name + ' 테마로 바꿨습니다');
+    };
+  });
+  const sk2d = $('#skinToDevice');
+  if(sk2d) sk2d.onclick = ()=>{ setDeviceSkin(curSkin()); applySkin(); renderAdminHome(); toast('이 기기의 테마로 저장했습니다'); };
+  const skCl = $('#skinClear');
+  if(skCl) skCl.onclick = ()=>{ setDeviceSkin(''); applySkin(); renderAdminHome(); toast('파일 기본값 테마로 되돌렸습니다'); };
+  const sk2f = $('#skinToFile');
+  if(sk2f) sk2f.onclick = ()=>{
+    data.skin = curSkin(); save(); renderAdminHome();
+    toast('파일 기본값으로도 저장했습니다 (새 파일을 만들어 올려야 다른 폰에 적용됩니다)');
+  };
+
   if(!wideAdmin() && adminListPicked) bindThreadListSection(body);
   $('#exportBtn').onclick = exportData;
   $('#importBtn').onclick = ()=> $('#importFile').click();
@@ -3798,7 +4889,7 @@ function renderMsgEditors(th, tid){
         ${msg.image?`<button class="btn btn-danger btn-sm" data-a="imgClear">사진 제거</button>`:''}
       </div>
       ${mine ? `<div class="er2" style="margin-top:8px">
-        <label>상태표시</label>
+        <label>상태표시 <span class="rsub">삼성 테마에서는 숫자 <b>1</b> 로 보입니다</span></label>
         <input type="text" data-f="status" placeholder="예) 읽음 / 전송됨 (비우면 없음)" value="${esc(msg.status||'')}">
       </div>` : ''}
       <div class="er3">
@@ -4011,6 +5102,8 @@ function toggleFullscreen(){
   }
 }
 $('#btnFull').onclick = ()=>{ if(isAdmin) toggleFullscreen(); };
+/* 삼성 테마의 새 메시지 버튼도 같은 역할 (관리자일 때만 전체화면) */
+$('#btnFab').onclick = ()=>{ if(isAdmin) toggleFullscreen(); };
 
 /* 제목 길게 눌러 관리자 진입 */
 let pressTimer = null;
@@ -4046,6 +5139,8 @@ function decideStartScreen(){
   let first = Promise.resolve();
   if(/[?&]reset=1/.test(location.search)){
     try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(LAST_KEY); localStorage.removeItem(VIEW_KEY); localStorage.removeItem(PAD_KEY); localStorage.removeItem(BRANCH_KEY); LEGACY_KEYS.forEach(k=>localStorage.removeItem(k)); }catch(e){}
+    /* 쿠키에 적어 둔 몫도 같이 지운다 — 안 지우면 되살아난다 */
+    try{ [LAST_KEY, VIEW_KEY, BRANCH_KEY].forEach(k=>{ document.cookie = k + '=;path=/;max-age=0'; }); }catch(e){}
     try{ first = idbClear(); }catch(e){}
     try{ if(window.caches && caches.keys) caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))); }catch(e){}
     try{
@@ -4135,6 +5230,7 @@ else {
 /* 실행할 때마다 서버의 index.html 을 확인해서 새 파일이면 갈아끼운다 */
 setTimeout(function once(){ if(!data){ setTimeout(once,500); return; } checkForUpdate(false); }, 1500);
 </script>
+
 
 
 

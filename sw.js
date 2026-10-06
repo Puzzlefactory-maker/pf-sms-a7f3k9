@@ -7,7 +7,7 @@ const VER = (function(){
   try { return new URL(self.location.href).searchParams.get('v') || 'dev'; }
   catch(e){ return 'dev'; }
 })();
-const CACHE = 'crimescene-sms-' + VER;
+const CACHE = 'crimescene-sms-u-' + VER;
 const ASSETS = [
   './',
   './index.html',
@@ -28,7 +28,9 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+    /* 같은 주소에 다른 앱(아이폰판·삼성판)이 함께 올라가 있을 수 있으므로,
+       이 앱이 만든 캐시(crimescene-sms-u-…)만 지운다. */
+    await Promise.all(keys.filter(k => k !== CACHE && k.indexOf('crimescene-sms-u-') === 0).map(k => caches.delete(k)));
     await self.clients.claim();
   })());
 });
