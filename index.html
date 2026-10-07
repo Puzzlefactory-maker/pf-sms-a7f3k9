@@ -727,6 +727,46 @@
 .msg-editor .er2>*{margin-bottom:8px}
 .msg-editor .er2 label>*+*{margin-left:5px}
 .msg-editor .er3>*+*{margin-left:6px}
+.confirm-actions>*+*{margin-left:8px}</style><style id="oldBrowserGap">.head-icons>*+*{margin-left:2px}
+.searchbar>*+*{margin-left:9px}
+.thread>*+*{margin-left:13px}
+.thread-name-row>*+*{margin-left:6px}
+.thread-right>*+*{margin-top:6px}
+.room-head>*+*{margin-left:4px}
+.msg-row>*+*{margin-left:7px}
+.m-line>*+*{margin-left:6px}
+.m-info>*+*{margin-top:1px}
+.inputbar>*+*{margin-left:9px}
+.inputbar .fake-input>*+*{margin-left:8px}
+.skin-btn>*+*{margin-left:9px}
+.skin-prev>*+*{margin-top:3px}
+.admin-header .row-actions>*{margin-right:8px}
+.admin-header .row-actions>*{margin-bottom:8px}
+.bp-row>*+*{margin-left:10px}
+.admin-body>*+*{margin-left:14px}
+.add-row>*+*{margin-left:8px}
+.admin-section h3>*+*{margin-left:8px}
+.row-actions>*{margin-right:7px}
+.row-actions>*{margin-bottom:7px}
+.crumb>*{margin-right:8px}
+.crumb>*{margin-bottom:8px}
+.admin-list-item .top>*+*{margin-left:8px}
+.ppl-row>*+*{margin-left:10px}
+.ppl-head>*{margin-right:8px}
+.ppl-head>*{margin-bottom:8px}
+.ppl-btns>*{margin-right:6px}
+.ppl-btns>*{margin-bottom:6px}
+.part-row>*+*{margin-left:11px}
+.part-name>*{margin-right:6px}
+.part-name>*{margin-bottom:6px}
+.part-actions>*{margin-right:5px}
+.part-actions>*{margin-bottom:5px}
+.av-edit>*+*{margin-left:12px}
+.msg-editor .er1>*+*{margin-left:8px}
+.msg-editor .er2>*{margin-right:8px}
+.msg-editor .er2>*{margin-bottom:8px}
+.msg-editor .er2 label>*+*{margin-left:5px}
+.msg-editor .er3>*+*{margin-left:6px}
 .confirm-actions>*+*{margin-left:8px}</style></head>
 <body>
 <div id="phone" style="--safe-b: 0px;" class="skin-ios dark">
@@ -768,14 +808,10 @@
   <div class="screen" id="roomScreen">
     <div class="room-head">
       <button class="back" id="btnBack">‹</button>
-      <div class="r-av" id="roomAv" style="background: rgb(227, 231, 236);"><svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100" height="100" fill="#c3c9d0"></rect>
-    <circle cx="50" cy="40" r="16" fill="#f4f6f8"></circle>
-    <path d="M50 60c-18 0-30 13-32 34h64c-2-21-14-34-32-34z" fill="#f4f6f8"></path>
-  </svg></div>
+      <div class="r-av" id="roomAv" style="background: rgb(201, 111, 168);">장</div>
       <div class="r-info">
-        <div class="r-name" id="roomName">1588-1588<span class="caret">▾</span></div>
-        <div class="r-sub" id="roomSub"></div>
+        <div class="r-name" id="roomName">장실장, 명사수, 해커스팍, 연다영, 유도환<span class="caret">▾</span></div>
+        <div class="r-sub" id="roomSub">수신자 5명</div>
       </div>
       <div class="r-icons">
         <button title="전화">
@@ -868,7 +904,7 @@
    ============================================================ */
 
 /*__CS_DATA_START__ 아래 두 줄이 이 파일에 들어있는 대화 내용입니다. */
-const DATA_VERSION = "2026-10-06-170815";
+const DATA_VERSION = "2026-10-07-111505";
 const EMBEDDED_DATA = {
  "appName": "메시지",
  "skin": "ios",
@@ -1920,11 +1956,13 @@ const EMBEDDED_DATA = {
      "participants": [
       {
        "id": "xwh2mjfz",
-       "name": "이작가"
+       "name": "이작가",
+       "sub": ""
       },
       {
        "id": "xi4c6hvk",
-       "name": "무대표"
+       "name": "무대표",
+       "sub": ""
       }
      ],
      "messages": [
@@ -2063,10 +2101,13 @@ const EMBEDDED_DATA = {
     },
     {
      "id": "xp90xfva",
-     "isGroup": false,
+     "isGroup": true,
      "only": [],
      "per": {
       "pk4r7js_4": {
+       "unread": 0
+      },
+      "pk4r7js": {
        "unread": 0
       }
      },
@@ -2078,15 +2119,30 @@ const EMBEDDED_DATA = {
       },
       {
        "id": "xa0k4gu1",
-       "name": "김교수 단체문자용",
-       "sub": ""
+       "name": "장실장"
+      },
+      {
+       "id": "xnbxm94d",
+       "name": "명사수"
+      },
+      {
+       "id": "xmsc45ll",
+       "name": "해커스팍"
+      },
+      {
+       "id": "xh7h7wi7",
+       "name": "연다영"
+      },
+      {
+       "id": "xpdtfdhc",
+       "name": "유도환"
       }
      ],
      "messages": [
       {
        "id": "x697mogz",
        "senderName": "김교수",
-       "text": "배분과 관련한 중요 발표가 있습니다. 내일(21일)밤 9시까지 그곳으로 모여주세요. 불참이나 늦는 경우에 발생할 수 있는 모든 불이익은 본인이 감내하는 것으로 이해하겠스비다.",
+       "text": "배분과 관련한 중요 발표가 있습니다. 내일(21일)밤 9시까지 그곳으로 모여주세요. 불참이나 늦는 경우에 발생할 수 있는 모든 불이익은 본인이 감내하는 것으로 이해하겠습니다.",
        "image": "",
        "time": "오후 10:00",
        "date": "2020-02-20",
@@ -2146,10 +2202,31 @@ const EMBEDDED_DATA = {
     },
     {
      "id": "pk4r7js_4",
-     "name": "김교수 단체문자용",
+     "name": "장실장",
      "sub": "",
      "avatar": "",
      "silo": 1
+    },
+    {
+     "id": "pk4r7js_5",
+     "name": "해커스팍",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
+    },
+    {
+     "id": "pk4r7js_6",
+     "name": "연다영",
+     "sub": "",
+     "avatar": "",
+     "silo": 1
+    },
+    {
+     "id": "pk4r7js_7",
+     "name": "유도환",
+     "sub": "",
+     "avatar": "",
+     "silo": 0
     }
    ],
    "unified": true,
@@ -2161,7 +2238,7 @@ const EMBEDDED_DATA = {
 
 /* 코드(기능) 버전. 데이터와 별개로 “이 파일의 프로그램이 언제 것인지”를 나타낸다.
    관리자 정보란에 표시되므로, 폰에 옛 파일이 올라갔는지 바로 알 수 있다. */
-const CODE_VERSION = '2026-10-06-U1 (테마 통합본 · 아이폰/삼성 × 일반/다크)';
+const CODE_VERSION = '2026-10-07-U2 (테마 통합본 · 글자/프로필 크기)';
 
 /* 저장 이름 뒤의 _u 는 “통합본” 이라는 뜻. 아이폰판(_v2)·삼성판(_s)과 같은 주소에 올려도
    서로의 내용을 건드리지 않게 이름을 따로 쓴다. */
@@ -3378,6 +3455,103 @@ function setDevicePad(v){
 function filePad(){ const L = curList(); return Math.max(0, Number(L && L.bottomPad)||0); }
 function effPad(){ const d = devicePad(); return (d === null) ? filePad() : d; }
 
+/* ---------- 글자 크기 · 프로필 사진 크기 (폰마다 따로) ----------
+   0~100 % 로 적는다. 100 이 지금 크기이고, 숫자를 줄이면 작아진다.
+   손님 화면(목록·대화방) 안의 글자와 프로필 동그라미에만 배율을 곱한 덮어쓰기 스타일을
+   만들어 붙인다. 관리자 편집 화면은 건드리지 않는다.
+   스킨(아이폰/삼성·일반/다크)마다 크기가 다르므로, 지금 붙어 있는 스타일을 그대로 읽어
+   배율만 곱한다 — 어떤 스킨을 골라도 비율이 맞는다. */
+const FONT_KEY = 'crimescene_sms_u_fontpct';
+const FACE_KEY = 'crimescene_sms_u_facepct';
+const FACE_TAILS = ['.avatar', '.m-av', '.r-av'];     /* 프로필 동그라미로 보는 선택자 끝 */
+let sizeStyleEl = null;
+
+function devicePct(key){
+  const v = keepRead(key);
+  if(v === '' || v === null || v === undefined) return 100;
+  const n = Math.round(Number(v));
+  return (isFinite(n) && n >= 0 && n <= 100) ? n : 100;
+}
+function setDevicePct(key, n){
+  n = Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+  keepWrite(key, n === 100 ? '' : String(n));        /* 100 이면 아무것도 저장하지 않는다 */
+}
+/* 손님 화면 안으로 범위를 좁힌 선택자를 만든다.
+   “#phone.skin-sam .bubble” 처럼 #phone 으로 시작하면 그 뒤에 화면을 끼워 넣어야 한다. */
+function scopeSel(sel, screen){
+  sel = String(sel || '').trim();
+  if(!sel || sel.indexOf('::') >= 0) return '';
+  if(sel.indexOf('#listScreen') >= 0 || sel.indexOf('#roomScreen') >= 0) return sel;
+  if(sel.indexOf('#adminOverlay') >= 0 || sel.indexOf('.admin') >= 0) return '';
+  if(sel.indexOf('#phone') === 0){
+    const sp = sel.indexOf(' ');
+    if(sp < 0) return '';                             /* #phone 자체는 손대지 않는다 */
+    return sel.slice(0, sp) + ' ' + screen + ' ' + sel.slice(sp + 1);
+  }
+  return screen + ' ' + sel;
+}
+function isFaceSel(sel){
+  for(let i = 0; i < FACE_TAILS.length; i++){
+    const t = FACE_TAILS[i];
+    if(sel.length >= t.length && sel.slice(-t.length) === t) return true;
+  }
+  return false;
+}
+function applySizes(){
+  const fs = devicePct(FONT_KEY) / 100;
+  const fc = devicePct(FACE_KEY) / 100;
+  if(!sizeStyleEl){
+    sizeStyleEl = document.createElement('style');
+    sizeStyleEl.id = 'sizeScale';
+    (document.head || document.documentElement).appendChild(sizeStyleEl);
+  }
+  if(fs === 1 && fc === 1){ sizeStyleEl.textContent = ''; return; }
+
+  const out = [];
+  const put = (sel, body, cond)=>{
+    const a = scopeSel(sel, '#listScreen'), b = scopeSel(sel, '#roomScreen');
+    const parts = (a === b) ? (a ? [a] : []) : [a, b].filter(Boolean);
+    if(!parts.length) return;
+    const rule = parts.join(',') + '{' + body + '}';
+    out.push(cond ? ('@media ' + cond + '{' + rule + '}') : rule);
+  };
+  const px = v => /^[\d.]+px$/.test(String(v || '').trim());
+  const walk = (rules, cond)=>{
+    if(!rules) return;
+    for(let i = 0; i < rules.length; i++){
+      const r = rules[i];
+      if(r.cssRules && r.cssRules.length){
+        walk(r.cssRules, r.conditionText || (r.media && r.media.mediaText) || cond);
+      }
+      if(!r.style || !r.selectorText) continue;
+      const sels = r.selectorText.split(',');
+      for(let s = 0; s < sels.length; s++){
+        const sel = sels[s].trim();
+        if(!sel) continue;
+        const body = [];
+        if(fs !== 1 && px(r.style.fontSize)){
+          body.push('font-size:' + (parseFloat(r.style.fontSize) * fs).toFixed(2) + 'px');
+        }
+        if(fc !== 1 && isFaceSel(sel)){
+          if(px(r.style.width))  body.push('width:'  + (parseFloat(r.style.width)  * fc).toFixed(2) + 'px');
+          if(px(r.style.height)) body.push('height:' + (parseFloat(r.style.height) * fc).toFixed(2) + 'px');
+          if(px(r.style.borderRadius)) body.push('border-radius:' + (parseFloat(r.style.borderRadius) * fc).toFixed(2) + 'px');
+          if(fs === 1 && px(r.style.fontSize)) body.push('font-size:' + (parseFloat(r.style.fontSize) * fc).toFixed(2) + 'px');
+        }
+        if(body.length) put(sel, body.join(';'), cond);
+      }
+    }
+  };
+  try{
+    const sheets = document.styleSheets;
+    for(let i = 0; i < sheets.length; i++){
+      if(sheets[i].ownerNode === sizeStyleEl) continue;   /* 내가 만든 건 다시 읽지 않는다 */
+      try{ walk(sheets[i].cssRules, ''); }catch(e){}
+    }
+  }catch(e){}
+  sizeStyleEl.textContent = out.join('\n');
+}
+
 /* ---------- 목록 렌더 ---------- */
 function applyBottomPad(){
   document.getElementById('phone').style.setProperty('--safe-b', effPad()+'px');
@@ -3392,6 +3566,7 @@ function renderList(){
   rememberList();        /* 지금 보고 있는 목록을 기억 (다음 실행 때 이 목록으로 시작) */
   applySkin();           /* 고른 테마(아이폰·삼성 / 일반·다크) 입히기 */
   applyBottomPad();
+  applySizes();          /* 글자·프로필 크기 (스킨을 입힌 뒤에 계산한다) */
   applyAppIdentity();
   const L = curList();
   applyMeFlags();
@@ -3701,7 +3876,7 @@ function guestMode(){
 let treePath = [];          /* [] | [지점id] | [지점id, 테마id] */
 let adminListPicked = false;/* 특정 테마(문자 앱 한 벌)를 “열기”로 고른 상태인지 */
 let editingNode = '';       /* 이름 편집 중인 항목 (c1:id / c2:id / P:인물id) */
-let foldState = { pad:true };   /* 접힘 상태 (기본 접힘) */
+let foldState = { pad:true , size:true };   /* 접힘 상태 (기본 접힘) */
 
 function curC1(){ return treePath[0] ? data.tree.find(c=>c.id===treePath[0]) : null; }
 function curC2(){ const c1 = curC1(); return (c1 && treePath[1]) ? (c1.children||[]).find(c=>c.id===treePath[1]) : null; }
@@ -4438,6 +4613,33 @@ function renderAdminHome(resetScroll){
           ${wideAdmin() ? '<button class="btn btn-ghost btn-sm" id="padToFile">파일 기본값으로도 저장</button>' : ''}
         </div>
       </div>
+    </div>
+
+    <div class="admin-section ${foldState.size?'folded':''}">
+      <h3 class="foldable" data-fold="size">글자 · 프로필 크기 <span class="fold-arrow">${foldState.size?'▶':'▼'}</span></h3>
+      <div class="fold-body">
+        <div class="field" style="margin-bottom:10px">
+          <label style="display:block;margin-bottom:4px">글자 크기 <b id="fontPctLabel">${devicePct(FONT_KEY)}%</b></label>
+          <input type="range" id="fontPct" min="0" max="100" step="5" value="${devicePct(FONT_KEY)}" style="width:100%;padding:0">
+          <div class="row-actions" style="margin-top:6px">
+            ${[60,70,80,90,100].map(v=>`<button class="btn btn-ghost btn-sm" data-fontset="${v}">${v}%</button>`).join('')}
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label style="display:block;margin-bottom:4px">프로필 사진 크기 <b id="facePctLabel">${devicePct(FACE_KEY)}%</b></label>
+          <input type="range" id="facePct" min="0" max="100" step="5" value="${devicePct(FACE_KEY)}" style="width:100%;padding:0">
+          <div class="row-actions" style="margin-top:6px">
+            ${[50,60,70,80,100].map(v=>`<button class="btn btn-ghost btn-sm" data-faceset="${v}">${v}%</button>`).join('')}
+          </div>
+        </div>
+        <div class="row-actions">
+          <button class="btn btn-ghost btn-sm" id="sizeReset">둘 다 100%로</button>
+        </div>
+        <div class="hint">화면이 작은 폰에서 글자와 프로필 사진을 줄일 때 씁니다. <b>100%가 지금 크기</b>이고 숫자를 줄이면 작아집니다.<br>
+          움직이면 손님 화면에 바로 적용되고, <b>이 기기에만 저장</b>되므로 내용을 업데이트해도 그대로 유지됩니다.
+          아이폰·삼성 어느 테마를 골라도 그 테마 크기에 맞춰 줄어듭니다.
+          (관리자 편집 화면 글씨는 바뀌지 않습니다. 보통 60~100% 안에서 맞추세요.)</div>
+      </div>
     </div>` : ''}
 
     <div class="admin-section">
@@ -4512,6 +4714,27 @@ function renderAdminHome(resetScroll){
   };
   const cbp = $('#clearBottomPad');
   if(cbp) cbp.onclick = ()=>{ setDevicePad(null); applyBottomPad(); renderAdminHome(); toast('파일 기본값으로 되돌렸습니다'); };
+
+  /* 글자 · 프로필 크기 — 움직이면 바로 적용되고 이 기기에 저장된다 */
+  const bindPct = (sliderId, labelId, key, btnAttr)=>{
+    const sl = $('#' + sliderId), lb = $('#' + labelId);
+    const show = ()=>{ if(lb) lb.textContent = devicePct(key) + '%'; };
+    if(sl){
+      const run = e=>{ setDevicePct(key, e.target.value); applySizes(); show(); };
+      sl.oninput = run; sl.onchange = run;
+    }
+    document.querySelectorAll('[' + btnAttr + ']').forEach(b=> b.onclick = ()=>{
+      setDevicePct(key, b.getAttribute(btnAttr));
+      applySizes(); if(sl) sl.value = devicePct(key); show();
+    });
+  };
+  bindPct('fontPct', 'fontPctLabel', FONT_KEY, 'data-fontset');
+  bindPct('facePct', 'facePctLabel', FACE_KEY, 'data-faceset');
+  const szr = $('#sizeReset');
+  if(szr) szr.onclick = ()=>{
+    setDevicePct(FONT_KEY, 100); setDevicePct(FACE_KEY, 100);
+    applySizes(); renderAdminHome(); toast('글자·프로필 크기를 100%로 되돌렸습니다');
+  };
   const p2f = $('#padToFile');
   if(p2f) p2f.onclick = ()=>{
     const v = Math.max(0, Number($('#ed-bottomPad').value)||0);
@@ -5138,9 +5361,9 @@ function decideStartScreen(){
   /* 주소 끝에 ?reset=1 을 붙여 열면 폰에 저장된 내용과 캐시를 전부 지우고 파일 내용으로 시작한다 */
   let first = Promise.resolve();
   if(/[?&]reset=1/.test(location.search)){
-    try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(LAST_KEY); localStorage.removeItem(VIEW_KEY); localStorage.removeItem(PAD_KEY); localStorage.removeItem(BRANCH_KEY); LEGACY_KEYS.forEach(k=>localStorage.removeItem(k)); }catch(e){}
+    try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(LAST_KEY); localStorage.removeItem(VIEW_KEY); localStorage.removeItem(PAD_KEY); localStorage.removeItem(FONT_KEY); localStorage.removeItem(FACE_KEY); localStorage.removeItem(BRANCH_KEY); LEGACY_KEYS.forEach(k=>localStorage.removeItem(k)); }catch(e){}
     /* 쿠키에 적어 둔 몫도 같이 지운다 — 안 지우면 되살아난다 */
-    try{ [LAST_KEY, VIEW_KEY, BRANCH_KEY].forEach(k=>{ document.cookie = k + '=;path=/;max-age=0'; }); }catch(e){}
+    try{ [LAST_KEY, VIEW_KEY, BRANCH_KEY, FONT_KEY, FACE_KEY].forEach(k=>{ document.cookie = k + '=;path=/;max-age=0'; }); }catch(e){}
     try{ first = idbClear(); }catch(e){}
     try{ if(window.caches && caches.keys) caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))); }catch(e){}
     try{
@@ -5230,6 +5453,7 @@ else {
 /* 실행할 때마다 서버의 index.html 을 확인해서 새 파일이면 갈아끼운다 */
 setTimeout(function once(){ if(!data){ setTimeout(once,500); return; } checkForUpdate(false); }, 1500);
 </script>
+
 
 
 
