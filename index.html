@@ -187,7 +187,11 @@
   #phone.skin-sam .date-divider { margin:16px 0 12px; }
   #phone.skin-sam .date-divider span { background:none; padding:0; font-size:12.5px; font-weight:500; }
 
-  .msg-row { display:flex; align-items:flex-end; gap:7px; margin-bottom:3px; }
+  /* 말풍선 사이 위아래 여백 — 같은 사람이 이어서 보낸 줄은 좁게,
+     말하는 사람이 바뀌는 줄(.run-head)은 넓게 띄워 대화가 덩어리로 읽히게 한다 */
+  .msg-row { display:flex; align-items:flex-end; gap:7px; margin-bottom:6px; }
+  .msg-row.run-head { margin-top:14px; }
+  .msg-row:first-child, .date-divider + .msg-row { margin-top:0; }
   .msg-row.mine { flex-direction:row-reverse; }
   .m-av { width:30px; height:30px; border-radius:50%; overflow:hidden; flex-shrink:0;
     display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:#fff; align-self:flex-start; margin-top:2px; }
@@ -211,7 +215,8 @@
   .m-status { font-size:10.5px; color:var(--accent); white-space:nowrap; font-weight:500; }
   .m-unread { display:none; font-size:12px; color:var(--badge); white-space:nowrap; font-weight:800; line-height:1; }
   /* 삼성: 말풍선이 더 넓고 둥글며, 상태표시는 글자 대신 숫자 1 */
-  #phone.skin-sam .msg-row { gap:8px; margin-bottom:8px; }
+  #phone.skin-sam .msg-row { gap:8px; margin-bottom:9px; }
+  #phone.skin-sam .msg-row.run-head { margin-top:16px; }
   #phone.skin-sam .m-av { width:34px; height:34px; font-size:14px; font-weight:700; }
   #phone.skin-sam .m-col { max-width:76%; }
   #phone.skin-sam .m-sender { font-size:12.5px; font-weight:600; }
@@ -6433,11 +6438,11 @@ function renderMessages(th){
     const p = partOf(th, msg.senderName) || {name:msg.senderName, isMe:false, avatar:'', silo:0};
     const mine = !!p.isMe;
     const row = document.createElement('div');
-    row.className = 'msg-row' + (mine?' mine':'');
-    row.dataset.date = eff[i] || '';
-
     /* 상대 아바타·이름은 보낸 사람이 바뀐 첫 줄에만 표시 */
     const headOfRun = (lastSender !== normKey(msg.senderName));
+    row.className = 'msg-row' + (mine?' mine':'') + (headOfRun?' run-head':'');
+    row.dataset.date = eff[i] || '';
+
     let avHtml = '';
     if(!mine){
       avHtml = headOfRun
